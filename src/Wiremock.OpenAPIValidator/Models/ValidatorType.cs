@@ -6,6 +6,7 @@
         ParamRequired,
         ParamType,
         Response,
-        UrlMatch
+        UrlMatch,
+        ResponsePropertyRequired,
     }
 }

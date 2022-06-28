@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Wiremock.OpenAPIValidator.Commands;
 using Wiremock.OpenAPIValidator.Queries;
 
@@ -77,6 +78,20 @@ public class ValidationService
                     Param = param
                 }));
             }
+
+            var mockedResponse = await _mediator.Send(new WiremockResponseReaderCommand
+            {
+                MockResponseFileName = mappings.Response.FileName,
+                WiremockMappingPath = wireMockMappings
+            });
+
+            // Response Property Check
+            validation.Results.AddRange(await _mediator.Send(new PropertyRequiredQuery
+            {
+                MockProperties = mockedResponse,
+                Name = operation.OperationId,
+                Responses = operation.Responses
+            }));
         };
 
         return validation;
