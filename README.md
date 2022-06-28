@@ -32,3 +32,6 @@ This tool is intended to test your Wiremock stubs against an OpenAPI (v3) specif
 
 --version                     Display version information.
 ```
+
+### Result
+![Example Result](./assets/output.png)
