@@ -1,31 +1,65 @@
-﻿using MediatR;
+﻿using CommandLine;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
+using Spectre.Console.Cli;
 
 namespace Wiremock.OpenAPIValidator
 {
     internal partial class Program
     {
-        static async Task Main(string[] args)
+        static async Task<int> Main(string[] args)
         {
+            var wireMockPath = string.Empty;
+            var openApiPath = string.Empty;
+            Parser.Default.ParseArguments<Options>(args)
+                   .WithParsed(o =>
+                   {
+                       if (File.Exists(o.OpenApiPath))
+                       {
+                           AnsiConsole.Write(new Markup($"[green]OpenApiPath: [/]"));
+                           AnsiConsole.Write(new TextPath(o.OpenApiPath));
+                           openApiPath = o.OpenApiPath;
+                       }
+                       else
+                       {
+                           AnsiConsole.Write(new Markup($"[red]No File was found at: '{o.OpenApiPath}'[/]"));
+                       }
+
+                       if (Directory.Exists(o.WiremockMappingsPath))
+                       {
+                           AnsiConsole.Write(new Markup("[green]Wiremock Mappings Path: [/]"));
+                           AnsiConsole.Write(new TextPath(o.WiremockMappingsPath));
+                           wireMockPath = o.WiremockMappingsPath;
+                       }
+                       else
+                       {
+                           AnsiConsole.Write(new Markup($"[red]No Directory was found at: '{o.WiremockMappingsPath}'[/]"));
+                       }
+                   });
+
+            if (string.IsNullOrEmpty(wireMockPath) || string.IsNullOrEmpty(openApiPath))
+            {
+                return 0;
+            }
+
+
+            AnsiConsole.Write(new Rule());
             AnsiConsole.Write(new FigletText("Wiremock Open API Validator")
                 .Centered()
                 .Color(Color.Aquamarine1));
-            var rule = new Rule();
-            AnsiConsole.Write(rule);
+ 
+            AnsiConsole.Write(new Rule());
             IServiceCollection services = new ServiceCollection();
             services.AddMediatR(typeof(Program));
             services.AddSingleton<ValidationService>();
 
-            var openApiUrl = @"C:\git\signatureanalytics-data\src\.api-client-config\openapi.yaml";
-            var wireMockMappings = @"C:\git\exclaimercloud-ui\build\mocks\signature-analytics\stubs\mappings";
-
             var provider = services.BuildServiceProvider();
             var validationService = provider.GetRequiredService<ValidationService>();
 
-            var validationResult = await validationService.ValidateAsync(openApiUrl, wireMockMappings);
+            var validationResult = await validationService.ValidateAsync(openApiPath, wireMockPath);
 
-            var parentWiremock = Directory.GetParent(wireMockMappings);
+            var parentWiremock = Directory.GetParent(wireMockPath);
 
             var table = new Table()
             {
@@ -52,6 +86,15 @@ namespace Wiremock.OpenAPIValidator
                 .AddItem("Error", validationResult.Results.Count(x => x.ValidationResult == ValidationResult.Error), Color.DarkRed));
 
             Console.ReadLine();
+            
+            if (validationResult.Results.Any(x => x.ValidationResult == ValidationResult.Failed || x.ValidationResult == ValidationResult.Error))
+            {
+                return 1;
+            } 
+            else
+            {
+                return 0;
+            }
 
 
             //using var responseStream = File.OpenRead(Path.Combine(parentWiremock.FullName, "__files", mappings.Response.FileName));
