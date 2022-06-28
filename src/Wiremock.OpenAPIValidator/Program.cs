@@ -66,8 +66,8 @@ namespace Wiremock.OpenAPIValidator
             };
             table.AddColumn("Name");
             table.AddColumn("Check Type");
-            table.AddColumn("Failed");
-            table.AddColumn("Failure Reason");
+            table.AddColumn("Result");
+            table.AddColumn("Reason");
 
             foreach (var validation in validationResult.Results)
             {
