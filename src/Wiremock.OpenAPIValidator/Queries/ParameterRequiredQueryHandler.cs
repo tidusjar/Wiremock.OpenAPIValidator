@@ -10,7 +10,7 @@ public class ParameterRequiredQuery : BaseQuery, IRequest<ValidatorNode>
     public JsonElement MockedParameters { get; set; }
 }
 
-internal class ParameterRequiredQueryHandler : IRequestHandler<ParameterRequiredQuery, ValidatorNode>
+public class ParameterRequiredQueryHandler : IRequestHandler<ParameterRequiredQuery, ValidatorNode>
 {
     public Task<ValidatorNode> Handle(ParameterRequiredQuery request, CancellationToken cancellationToken)
     {

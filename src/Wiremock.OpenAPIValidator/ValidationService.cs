@@ -5,7 +5,7 @@ using Wiremock.OpenAPIValidator.Queries;
 
 namespace Wiremock.OpenAPIValidator;
 
-internal class ValidationService
+public class ValidationService
 {
     private readonly IMediator _mediator;
 
@@ -35,7 +35,7 @@ internal class ValidationService
                 WiremockMappingPath = mock
             });
 
-            // Patch Match Check
+            // Path Match Check
             var results = await _mediator.Send(new UrlPathMatchQuery
             {
                 ApiPaths = paths,

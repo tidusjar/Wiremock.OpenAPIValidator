@@ -12,7 +12,7 @@ public class ParameterTypeQuery : BaseQuery, IRequest<ValidatorNode>
     public JsonElement MockedParameters { get; set; }
 }
 
-internal class ParameterTypeQueryHandler : IRequestHandler<ParameterTypeQuery, ValidatorNode>
+public class ParameterTypeQueryHandler : IRequestHandler<ParameterTypeQuery, ValidatorNode>
 {
     public Task<ValidatorNode> Handle(ParameterTypeQuery request, CancellationToken cancellationToken)
     {
@@ -101,11 +101,21 @@ internal class ParameterTypeQueryHandler : IRequestHandler<ParameterTypeQuery, V
                     return Task.FromResult(new ValidatorNode
                     {
                         Name = request.Name,
-                        Description = $"Required Property'{request.Param.Name}' regex does not match the correct type. API Provides: '{Guid.NewGuid()}', Mocked Match: '{regexMatch}'",
+                        Description = $"Required Property '{request.Param.Name}' regex does not match the correct type. API Provides: '{Guid.NewGuid()}', Mocked Match: '{regexMatch}'",
                         Type = ValidatorType.ParamType,
                         ValidationResult = ValidationResult.Failed
                     });
                 };
+            } 
+            else
+            {
+                return Task.FromResult(new ValidatorNode
+                {
+                    Name = request.Name,
+                    Description = $"Required Property '{request.Param.Name}' Match is not yet supported, Mocked Match: '{regexMatch}'",
+                    Type = ValidatorType.ParamType,
+                    ValidationResult = ValidationResult.Warning
+                });
             }
         }
 
