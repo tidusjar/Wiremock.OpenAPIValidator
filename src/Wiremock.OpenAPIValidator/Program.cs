@@ -47,7 +47,7 @@ namespace Wiremock.OpenAPIValidator
             AnsiConsole.Write(new FigletText("Wiremock Open API Validator")
                 .Centered()
                 .Color(Color.Aquamarine1));
- 
+
             AnsiConsole.Write(new Rule());
             IServiceCollection services = new ServiceCollection();
             services.AddMediatR(typeof(Program));
@@ -57,8 +57,6 @@ namespace Wiremock.OpenAPIValidator
             var validationService = provider.GetRequiredService<ValidationService>();
 
             var validationResult = await validationService.ValidateAsync(openApiPath, wireMockPath);
-
-            var parentWiremock = Directory.GetParent(wireMockPath);
 
             var table = new Table()
             {
@@ -84,8 +82,24 @@ namespace Wiremock.OpenAPIValidator
                 .AddItem("Failed", validationResult.Results.Count(x => x.ValidationResult == ValidationResult.Failed), Color.Red)
                 .AddItem("Error", validationResult.Results.Count(x => x.ValidationResult == ValidationResult.Error), Color.DarkRed));
 
-            Console.ReadLine();
-            
+            if (validationResult.Results.Any(x => x.ValidationResult == ValidationResult.Failed))
+            {
+                var grouped = validationResult.Results.Where(x => x.ValidationResult == ValidationResult.Failed).GroupBy(x => x.Type);
+                AnsiConsole.Write(new BarChart()
+                   .Label("[red bold underline]Failure Type Breakdown[/]")
+                   .CenterLabel()
+                   .AddItems(grouped, (item) => new BarChartItem(item.Key.ToString(), item.Count())));
+            }
+            if (validationResult.Results.Any(x => x.ValidationResult == ValidationResult.Warning))
+            {
+                var rnd = new Random();
+                var grouped = validationResult.Results.Where(x => x.ValidationResult == ValidationResult.Warning).GroupBy(x => x.Type);
+                AnsiConsole.Write(new BarChart()
+                   .Label("[yellow bold underline]Warning Type Breakdown[/]")
+                   .CenterLabel()
+                   .AddItems(grouped, (item) => new BarChartItem(item.Key.ToString(), item.Count(), Color.FromInt32(rnd.Next(255)))));
+            }
+
             if (validationResult.Results.Any(x => x.ValidationResult == ValidationResult.Failed || x.ValidationResult == ValidationResult.Error))
             {
                 return 1;
@@ -94,18 +108,6 @@ namespace Wiremock.OpenAPIValidator
             {
                 return 0;
             }
-
-
-            //using var responseStream = File.OpenRead(Path.Combine(parentWiremock.FullName, "__files", mappings.Response.FileName));
-            //var doc = JsonDocument.Parse(responseStream);
-            //if (doc.RootElement.ValueKind == JsonValueKind.Object)
-            //{
-            //    var responseObjects = doc.Deserialize<JsonObject>();
-            //}
-            //else if (doc.RootElement.ValueKind == JsonValueKind.Array)
-            //{
-            //    var responseObjects = doc.Deserialize<JsonArray>();
-            //}
         }
 
         private static Markup RenderStatus(ValidatorNode validation) =>
