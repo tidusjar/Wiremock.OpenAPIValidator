@@ -2,7 +2,6 @@
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
-using Spectre.Console.Cli;
 
 namespace Wiremock.OpenAPIValidator
 {
