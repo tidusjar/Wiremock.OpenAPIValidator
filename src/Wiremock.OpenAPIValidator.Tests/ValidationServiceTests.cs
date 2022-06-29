@@ -57,7 +57,7 @@ namespace Wiremock.OpenAPIValidator.Tests
                     }
                 });
 
-            _mocker.Setup<IMediator, Task<(ValidatorNode, OpenApiPathItem)>>(x => x.Send(It.IsAny<UrlPathMatchQuery>(), It.IsAny<CancellationToken>()))
+            _mocker.Setup<IMediator, Task<(ValidatorNode, OpenApiPathItem?)>>(x => x.Send(It.IsAny<UrlPathMatchQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((new ValidatorNode(), new OpenApiPathItem
                 {
                     Operations = new Dictionary<OperationType, OpenApiOperation> { { OperationType.Put, new OpenApiOperation {

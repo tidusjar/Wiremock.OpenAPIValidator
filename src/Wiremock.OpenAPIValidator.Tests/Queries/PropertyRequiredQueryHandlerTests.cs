@@ -32,7 +32,7 @@ public class PropertyRequiredQueryHandlerTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(response.Count, Is.EqualTo(1));
+            Assert.That(response, Has.Count.EqualTo(1));
             Assert.That(response[0].Type, Is.EqualTo(ValidatorType.ResponsePropertyRequired));
             Assert.That(response[0].Name, Is.EqualTo("Request - UnitTest - prop1"));
             Assert.That(response[0].ValidationResult, Is.EqualTo(ValidationResult.Passed));
@@ -57,7 +57,7 @@ public class PropertyRequiredQueryHandlerTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(response.Count, Is.EqualTo(1));
+            Assert.That(response, Has.Count.EqualTo(1));
             Assert.That(response[0].Type, Is.EqualTo(ValidatorType.ResponsePropertyRequired));
             Assert.That(response[0].Name, Is.EqualTo("Request - UnitTest - prop1"));
             Assert.That(response[0].ValidationResult, Is.EqualTo(ValidationResult.Failed));
@@ -83,7 +83,7 @@ public class PropertyRequiredQueryHandlerTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(response.Count, Is.EqualTo(1));
+            Assert.That(response, Has.Count.EqualTo(1));
             Assert.That(response[0].Type, Is.EqualTo(ValidatorType.ResponsePropertyRequired));
             Assert.That(response[0].Name, Is.EqualTo("Request - UnitTest - prop1"));
             Assert.That(response[0].ValidationResult, Is.EqualTo(ValidationResult.Warning));
@@ -113,7 +113,7 @@ public class PropertyRequiredQueryHandlerTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(response.Count, Is.EqualTo(3));
+            Assert.That(response, Has.Count.EqualTo(3));
             Assert.That(response[0].Type, Is.EqualTo(ValidatorType.ResponsePropertyRequired));
             Assert.That(response[0].Name, Is.EqualTo("Request - UnitTest - prop1"));
             Assert.That(response[0].ValidationResult, Is.EqualTo(ValidationResult.Passed));

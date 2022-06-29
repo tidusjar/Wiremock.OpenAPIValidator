@@ -8,7 +8,7 @@ namespace Wiremock.OpenAPIValidator.Commands;
 public class WiremockResponseReaderCommand : IRequest<WiremockResponseProperties>
 {
     public string WiremockMappingPath { get; set; } = string.Empty;
-    public string MockResponseFileName { get; set; }
+    public string MockResponseFileName { get; set; } = string.Empty;
 }
 
 internal class WiremockResponseReaderCommandHandler : IRequestHandler<WiremockResponseReaderCommand, WiremockResponseProperties>
@@ -39,9 +39,12 @@ internal class WiremockResponseReaderCommandHandler : IRequestHandler<WiremockRe
         {
             var responseObjects = doc.Deserialize<JsonArray>();
             result.ObjectType = ObjectType.Array;
-            foreach (var item in responseObjects)
+            if (responseObjects != null)
             {
-                TryAddProperty(result, item.Deserialize<JsonObject>());
+                foreach (var item in responseObjects)
+                {
+                    TryAddProperty(result, item.Deserialize<JsonObject>());
+                }
             }
         }
 
@@ -50,6 +53,10 @@ internal class WiremockResponseReaderCommandHandler : IRequestHandler<WiremockRe
 
     private static void TryAddProperty(WiremockResponseProperties result, JsonObject? responseObjects)
     {
+        if (responseObjects == null)
+        {
+            return;
+        }
         foreach (var obj in responseObjects)
         {
             if (obj.Value == null)

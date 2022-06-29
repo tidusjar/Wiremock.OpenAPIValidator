@@ -22,6 +22,7 @@
 		<RepositoryUrl>https://github.com/tidusjar/Wiremock.OpenAPIValidator</RepositoryUrl>
 		<RootNamespace>Wiremock.OpenAPIValidator</RootNamespace>
 		<Title>Wiremock Open API Validator</Title>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
 
 

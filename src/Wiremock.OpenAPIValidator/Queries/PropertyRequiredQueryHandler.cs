@@ -6,8 +6,8 @@ namespace Wiremock.OpenAPIValidator.Queries;
 
 public class PropertyRequiredQuery : BaseQuery, IRequest<List<ValidatorNode>>
 {
-    public OpenApiResponses Responses { get; set; }
-    public WiremockResponseProperties MockProperties { get; set; }
+    public OpenApiResponses? Responses { get; set; }
+    public WiremockResponseProperties? MockProperties { get; set; }
 }
 
 public class PropertyRequiredQueryHandler : IRequestHandler<PropertyRequiredQuery, List<ValidatorNode>>
@@ -15,6 +15,10 @@ public class PropertyRequiredQueryHandler : IRequestHandler<PropertyRequiredQuer
     public Task<List<ValidatorNode>> Handle(PropertyRequiredQuery request, CancellationToken cancellationToken)
     {
         var response = new List<ValidatorNode>();
+        if (request.Responses == null || request.MockProperties == null)
+        {
+            return Task.FromResult(response);
+        }
         // Only check for 200 OK response
         var okResponse = request.Responses.First(x => x.Key == "200");
         // Get JSON body

@@ -10,9 +10,9 @@ namespace Wiremock.OpenAPIValidator
     public class Options
     {
         [Option('o', "openApiPath", Required = true, HelpText = "File path to the Open API Spec")]
-        public string OpenApiPath { get; set; }
+        public string OpenApiPath { get; set; } = string.Empty;
         [Option('w', "wiremockMappingsPath", Required = true, HelpText = "File path to the stubs mappings folder")]
-        public string WiremockMappingsPath { get; set; }
+        public string WiremockMappingsPath { get; set; } = string.Empty;
     }
 
 }
