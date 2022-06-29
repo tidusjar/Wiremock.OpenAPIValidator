@@ -65,7 +65,6 @@ public class ParameterRequiredQueryHandlerTests
         });
     }
 
-
     [Test]
     public async Task Handle_NullParam()
     {

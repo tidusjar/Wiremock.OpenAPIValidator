@@ -286,6 +286,6 @@ public class ParameterTypeQueryHandlerTests
             Param = null,
             MockedParameters = doc.RootElement
         }, CancellationToken.None);
-        Assert.That(resposne, Is.InstanceOf<ValidatorNode?>());
+        Assert.That(response, Is.InstanceOf<ValidatorNode?>());
     }
 }
