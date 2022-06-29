@@ -2,13 +2,28 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
+		<Version>1.0.0</Version>
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>wiremockopenapi</ToolCommandName>
-		<PackageOutputPath>./nupkg</PackageOutputPath>
+
+		<AssemblyName>Wiremock.OpenAPIValidator</AssemblyName>
+		<AssemblyTitle>Wiremock Open API Validator</AssemblyTitle>
+		<Authors>TidusJar</Authors>
+		<Description>Validate your wiremock mappings against an OpenAPI v3 Specification</Description>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<IncludeSymbols>true</IncludeSymbols>
+		<MinVerTagPrefix>v</MinVerTagPrefix>
+		<PackageDescription>Validate your wiremock mappings against an OpenAPI v3 Specification</PackageDescription>
+		<!--<PackageIcon>icon.png</PackageIcon>-->
+		<PackageOutputPath>..\packages</PackageOutputPath>
+		<PackageProjectUrl>https://github.com/tidusjar/Wiremock.OpenAPIValidator</PackageProjectUrl>
+		<PackageTags>openapi, wiremock, mock</PackageTags>
+		<RepositoryUrl>https://github.com/tidusjar/Wiremock.OpenAPIValidator</RepositoryUrl>
+		<RootNamespace>Wiremock.OpenAPIValidator</RootNamespace>
+		<Title>Wiremock Open API Validator</Title>
 	</PropertyGroup>
 
 

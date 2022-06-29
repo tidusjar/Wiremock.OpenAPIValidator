@@ -1,0 +1,33 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: src
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+    - name: Build (Release)
+      run: dotnet build --configuration=Release
+    - name: Pack
+      run: dotnet pack -c Release -p:PackageVersion=${{ steps.get_version.outputs.VERSION }}
+    - name: Publish to NuGet
+      run: dotnet nuget push --skip-duplicate --api-key ${{secrets.NUGET_SECRET}} --source 'https://api.nuget.org/v3/index.json' packages/Wiremock.OpenAPIValidator.*.nupkg
+

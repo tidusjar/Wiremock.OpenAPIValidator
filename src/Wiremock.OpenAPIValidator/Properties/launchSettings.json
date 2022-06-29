@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Wiremock.OpenAPIValidator": {
+      "commandName": "Project",
+      "commandLineArgs": "--openApiPath \"C:\\git\\signatureanalytics-data\\src\\.api-client-config\\openapi.yaml\" -w \"\"C:\\git\\exclaimercloud-ui\\build\\mocks\\signature-analytics\\stubs\\mappings\""
+      //"commandLineArgs": "--help"
+    }
+  }
+}

@@ -34,7 +34,7 @@ public class PropertyRequiredQueryHandlerTests
         {
             Assert.That(response.Count, Is.EqualTo(1));
             Assert.That(response[0].Type, Is.EqualTo(ValidatorType.ResponsePropertyRequired));
-            Assert.That(response[0].Name, Is.EqualTo("UnitTest - prop1"));
+            Assert.That(response[0].Name, Is.EqualTo("Request - UnitTest - prop1"));
             Assert.That(response[0].ValidationResult, Is.EqualTo(ValidationResult.Passed));
             Assert.That(response[0].Description, Is.Null.Or.Empty);
         });
@@ -59,7 +59,7 @@ public class PropertyRequiredQueryHandlerTests
         {
             Assert.That(response.Count, Is.EqualTo(1));
             Assert.That(response[0].Type, Is.EqualTo(ValidatorType.ResponsePropertyRequired));
-            Assert.That(response[0].Name, Is.EqualTo("UnitTest - prop1"));
+            Assert.That(response[0].Name, Is.EqualTo("Request - UnitTest - prop1"));
             Assert.That(response[0].ValidationResult, Is.EqualTo(ValidationResult.Failed));
             Assert.That(response[0].Description, Is.Not.Null.And.Contains("prop1"));
         });
@@ -85,7 +85,7 @@ public class PropertyRequiredQueryHandlerTests
         {
             Assert.That(response.Count, Is.EqualTo(1));
             Assert.That(response[0].Type, Is.EqualTo(ValidatorType.ResponsePropertyRequired));
-            Assert.That(response[0].Name, Is.EqualTo("UnitTest - prop1"));
+            Assert.That(response[0].Name, Is.EqualTo("Request - UnitTest - prop1"));
             Assert.That(response[0].ValidationResult, Is.EqualTo(ValidationResult.Warning));
             Assert.That(response[0].Description, Is.Not.Null.And.Contains("prop1"));
         });
@@ -115,15 +115,15 @@ public class PropertyRequiredQueryHandlerTests
         {
             Assert.That(response.Count, Is.EqualTo(3));
             Assert.That(response[0].Type, Is.EqualTo(ValidatorType.ResponsePropertyRequired));
-            Assert.That(response[0].Name, Is.EqualTo("UnitTest - prop1"));
+            Assert.That(response[0].Name, Is.EqualTo("Request - UnitTest - prop1"));
             Assert.That(response[0].ValidationResult, Is.EqualTo(ValidationResult.Passed));
             Assert.That(response[0].Description, Is.Null.Or.Empty);
             Assert.That(response[1].Type, Is.EqualTo(ValidatorType.ResponsePropertyRequired));
-            Assert.That(response[1].Name, Is.EqualTo("UnitTest - Prop2"));
+            Assert.That(response[1].Name, Is.EqualTo("Request - UnitTest - Prop2"));
             Assert.That(response[1].ValidationResult, Is.EqualTo(ValidationResult.Failed));
             Assert.That(response[1].Description, Is.Not.Null.And.Contains("Prop2"));
             Assert.That(response[2].Type, Is.EqualTo(ValidatorType.ResponsePropertyRequired));
-            Assert.That(response[2].Name, Is.EqualTo("UnitTest - Prop3"));
+            Assert.That(response[2].Name, Is.EqualTo("Request - UnitTest - Prop3"));
             Assert.That(response[2].ValidationResult, Is.EqualTo(ValidationResult.Warning));
             Assert.That(response[2].Description, Is.Not.Null.And.Contains("Prop3"));
         });
