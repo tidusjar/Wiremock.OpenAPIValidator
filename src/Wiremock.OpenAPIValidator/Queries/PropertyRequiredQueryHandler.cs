@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using Microsoft.OpenApi.Models;
-using System.Text.Json;
 using Wiremock.OpenAPIValidator.Models;
 
 namespace Wiremock.OpenAPIValidator.Queries;
@@ -46,14 +45,15 @@ public class PropertyRequiredQueryHandler : IRequestHandler<PropertyRequiredQuer
                     ValidationResult = ValidationResult.Warning
                 });
             }
-
-            response.Add(new ValidatorNode
+            else
             {
-                Name = GetName(request.Name, property.Key),
-                Type = ValidatorType.ResponsePropertyRequired,
-                ValidationResult = ValidationResult.Passed
-            });
-
+                response.Add(new ValidatorNode
+                {
+                    Name = GetName(request.Name, property.Key),
+                    Type = ValidatorType.ResponsePropertyRequired,
+                    ValidationResult = ValidationResult.Passed
+                });
+            }
         }
         return Task.FromResult(response);
     }

@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Wiremock.OpenAPIValidator.Commands;
+using Wiremock.OpenAPIValidator.Models;
 using Wiremock.OpenAPIValidator.Queries;
 
 namespace Wiremock.OpenAPIValidator.Tests
@@ -49,6 +50,10 @@ namespace Wiremock.OpenAPIValidator.Tests
                     {
                         UrlPattern = "abc",
                         QueryParameters = doc.RootElement
+                    },
+                    Response = new WiremockResponse
+                    {
+                        FileName = "Test"
                     }
                 });
 
@@ -61,7 +66,15 @@ namespace Wiremock.OpenAPIValidator.Tests
                     } } }
                 }));
 
+            _mocker.Setup<IMediator, Task<WiremockResponseProperties>>(x => x.Send(It.IsAny<WiremockResponseReaderCommand>(), It.IsAny<CancellationToken>()))
+               .ReturnsAsync(new WiremockResponseProperties());
+
+            _mocker.Setup<IMediator, Task<List<ValidatorNode>>>(x => x.Send(It.IsAny<PropertyRequiredQuery>(), It.IsAny<CancellationToken>()))
+               .ReturnsAsync(new List<ValidatorNode>());
+
             var result = await _service.ValidateAsync("test1", "test2");
+
+            Assert.That(result, Is.Not.Null);
         }
     }
 }
