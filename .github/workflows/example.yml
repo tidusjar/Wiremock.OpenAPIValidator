@@ -6,6 +6,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples
 
     steps:
     - uses: actions/checkout@v3
@@ -20,4 +23,4 @@ jobs:
       run: dotnet tool install --global Wiremock.OpenAPIValidator
     - name: Run Validator
       run: |
-        wiremockopenapi -o "/examples/openapi/openapi.yml" -w "/example/wiremock/mappings"
+        wiremockopenapi -o "./openapi/openapi.yml" -w "./wiremock/mappings"
