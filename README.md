@@ -26,7 +26,24 @@ ___
 
 `wiremockopenapi -o "C:/git/MyApi/OpenApi.yml" -w "C:/git/wiremock/stubs/mappings"`
 
+## Example Workflow
+
+```
+steps:
+- uses: actions/checkout@v3
+- name: Setup .NET
+    uses: actions/setup-dotnet@v2
+    with:
+    dotnet-version: 6.0.x
+- name: Install Wiremock OpenAPI Validator Tool
+    run: dotnet tool install --global Wiremock.OpenAPIValidator
+- name: Run Validator
+    run: |
+    wiremockopenapi -o "./openapi/openapi.yaml" -w "./wiremock/mappings"
+```
+
 ___
+
 
 ```
 -o, --openApiPath             Required. File path to the Open API Spec
