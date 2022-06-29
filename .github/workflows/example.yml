@@ -23,4 +23,4 @@ jobs:
       run: dotnet tool install --global Wiremock.OpenAPIValidator
     - name: Run Validator
       run: |
-        wiremockopenapi -o "./openapi/openapi.yml" -w "./wiremock/mappings"
+        wiremockopenapi -o "./openapi/openapi.yaml" -w "./wiremock/mappings"
