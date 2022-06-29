@@ -13,17 +13,19 @@ This tool is intended to test your Wiremock stubs against an OpenAPI (v3) specif
 | Parameters | Checks all required parameters are present and the object type is correct. Will also check optional parameters but will only produce a warning |
 | Response | Checks the response object and ensuring the types also match |
 
-#
 
 
-### Installation
-`dotnet tool install WiremockOpenApiValidator`
 
-### Example
+# Installation
+.Net CLI (Global)
+
+`dotnet tool install --global Wiremock.OpenAPIValidator`
+___
+# Usage
 
 `wiremockopenapi -o "C:/git/MyApi/OpenApi.yml" -w "C:/git/wiremock/stubs/mappings"`
 
-## Usage
+___
 
 ```
 -o, --openApiPath             Required. File path to the Open API Spec
@@ -35,5 +37,5 @@ This tool is intended to test your Wiremock stubs against an OpenAPI (v3) specif
 --version                     Display version information.
 ```
 
-### Result
+# Example Output
 ![Example Result](./assets/output.png)
