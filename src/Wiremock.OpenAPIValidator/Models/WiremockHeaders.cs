@@ -5,6 +5,6 @@ namespace Wiremock.OpenAPIValidator
     public class WiremockHeaders
     {
         [JsonPropertyName("Content-Type")]
-        public string ContentType { get; set; }
+        public string ContentType { get; set; } = string.Empty;
     }
 }

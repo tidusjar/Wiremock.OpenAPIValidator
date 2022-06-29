@@ -8,8 +8,8 @@ namespace Wiremock.OpenAPIValidator
         [JsonPropertyName("status")]
         public HttpStatusCode Status { get; set; }
         [JsonPropertyName("bodyFileName")]
-        public string FileName { get; set; }
+        public string FileName { get; set; } = string.Empty;
         [JsonPropertyName("headers")]
-        public WiremockHeaders Headers { get; set; }
+        public WiremockHeaders? Headers { get; set; }
     }
 }

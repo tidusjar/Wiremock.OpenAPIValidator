@@ -8,7 +8,7 @@ namespace Wiremock.OpenAPIValidator.Queries;
 
 public class ParameterTypeQuery : BaseQuery, IRequest<ValidatorNode>
 {
-    public OpenApiParameter Param { get; set; }
+    public OpenApiParameter? Param { get; set; }
     public JsonElement MockedParameters { get; set; }
 }
 
@@ -16,6 +16,10 @@ public class ParameterTypeQueryHandler : IRequestHandler<ParameterTypeQuery, Val
 {
     public Task<ValidatorNode> Handle(ParameterTypeQuery request, CancellationToken cancellationToken)
     {
+        if (request.Param == null)
+        {
+            return Task.FromResult(new ValidatorNode());
+        }
         var existingProp = request.MockedParameters.TryGetProperty(request.Param.Name, out var mockedProperty);
         if (!existingProp && request.Param.Required)
         {
@@ -54,7 +58,7 @@ public class ParameterTypeQueryHandler : IRequestHandler<ParameterTypeQuery, Val
         if (request.Param.Schema.Enum.Any())
         {
             // enum check
-            var apiEnums = request.Param.Schema.Enum.Any(x => result.Values.Contains(((OpenApiString)x).Value));
+            var apiEnums = request.Param.Schema.Enum.Any(x => result.ContainsValue(((OpenApiString)x).Value));
             if (!apiEnums)
             {
                 return Task.FromResult(new ValidatorNode
@@ -105,7 +109,7 @@ public class ParameterTypeQueryHandler : IRequestHandler<ParameterTypeQuery, Val
                         Type = ValidatorType.ParamType,
                         ValidationResult = ValidationResult.Failed
                     });
-                };
+                }
             } 
             else
             {
@@ -136,6 +140,7 @@ public class ParameterTypeQueryHandler : IRequestHandler<ParameterTypeQuery, Val
         }
         catch
         {
+            // Ignore because we will just return null on invalid cast
         }
 
         return result;

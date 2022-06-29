@@ -54,4 +54,18 @@ public class UrlPathMatchQueryHandlerTests
         });
     }
 
+    [Test]
+    public async Task Handle_NullApiPath()
+    {
+        var response = await _handler.Handle(new UrlPathMatchQuery
+        {
+            MockUrlPattern = @"/api/v1/status\\?.*",
+            ApiPaths = null
+        }, CancellationToken.None);
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.Item1, Is.InstanceOf<ValidatorNode>());
+            Assert.That(response.Item2, Is.Null);
+        });
+    }
 }

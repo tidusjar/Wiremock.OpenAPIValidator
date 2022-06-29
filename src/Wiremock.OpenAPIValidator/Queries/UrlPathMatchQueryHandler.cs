@@ -6,14 +6,18 @@ namespace Wiremock.OpenAPIValidator.Queries;
 
 public class UrlPathMatchQuery : IRequest<(ValidatorNode, OpenApiPathItem?)>
 {
-    public OpenApiPaths ApiPaths { get; set; }
-    public string MockUrlPattern { get; set; }
+    public OpenApiPaths? ApiPaths { get; set; }
+    public string MockUrlPattern { get; set; } = string.Empty;
 }
 
 public class UrlPathMatchQueryHandler : IRequestHandler<UrlPathMatchQuery, (ValidatorNode, OpenApiPathItem?)>
 {
     public Task<(ValidatorNode, OpenApiPathItem?)> Handle(UrlPathMatchQuery request, CancellationToken cancellationToken)
     {
+        if (request.ApiPaths == null)
+        {
+            return Task.FromResult((new ValidatorNode(), (OpenApiPathItem?)null));
+        }
         OpenApiPathItem? matchingPath = null;
 
         var regex = new Regex(request.MockUrlPattern);
@@ -42,6 +46,6 @@ public class UrlPathMatchQueryHandler : IRequestHandler<UrlPathMatchQuery, (Vali
             Name = request.MockUrlPattern,
             Type = ValidatorType.UrlMatch,
             ValidationResult = ValidationResult.Passed
-        }, matchingPath));
+        }, (OpenApiPathItem?)matchingPath));
     }
 }

@@ -6,7 +6,7 @@ namespace Wiremock.OpenAPIValidator.Queries;
 
 public class ParameterRequiredQuery : BaseQuery, IRequest<ValidatorNode>
 {
-    public OpenApiParameter Param { get; set; }
+    public OpenApiParameter? Param { get; set; }
     public JsonElement MockedParameters { get; set; }
 }
 
@@ -14,7 +14,11 @@ public class ParameterRequiredQueryHandler : IRequestHandler<ParameterRequiredQu
 {
     public Task<ValidatorNode> Handle(ParameterRequiredQuery request, CancellationToken cancellationToken)
     {
-        var existingProp = request.MockedParameters.TryGetProperty(request.Param.Name, out var mockedProperty);
+        if (request.Param == null)
+        {
+            return Task.FromResult(new ValidatorNode());
+        }
+        var existingProp = request.MockedParameters.TryGetProperty(request.Param.Name, out var _);
 
         if (!existingProp && request.Param.Required)
         {

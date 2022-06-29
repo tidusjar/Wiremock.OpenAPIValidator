@@ -36,6 +36,11 @@ public class ValidationService
                 WiremockMappingPath = mock
             });
 
+            if (mappings?.Request == null || mappings?.Response == null)
+            {
+                continue;
+            }
+
             // Path Match Check
             var results = await _mediator.Send(new UrlPathMatchQuery
             {
@@ -92,7 +97,7 @@ public class ValidationService
                 Name = operation.OperationId,
                 Responses = operation.Responses
             }));
-        };
+        }
 
         return validation;
     }

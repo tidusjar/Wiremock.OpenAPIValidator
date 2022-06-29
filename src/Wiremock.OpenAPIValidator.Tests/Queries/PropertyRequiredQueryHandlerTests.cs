@@ -32,7 +32,7 @@ public class PropertyRequiredQueryHandlerTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(response.Count, Is.EqualTo(1));
+            Assert.That(response, Has.Count.EqualTo(1));
             Assert.That(response[0].Type, Is.EqualTo(ValidatorType.ResponsePropertyRequired));
             Assert.That(response[0].Name, Is.EqualTo("Request - UnitTest - prop1"));
             Assert.That(response[0].ValidationResult, Is.EqualTo(ValidationResult.Passed));
@@ -57,11 +57,47 @@ public class PropertyRequiredQueryHandlerTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(response.Count, Is.EqualTo(1));
+            Assert.That(response, Has.Count.EqualTo(1));
             Assert.That(response[0].Type, Is.EqualTo(ValidatorType.ResponsePropertyRequired));
             Assert.That(response[0].Name, Is.EqualTo("Request - UnitTest - prop1"));
             Assert.That(response[0].ValidationResult, Is.EqualTo(ValidationResult.Failed));
             Assert.That(response[0].Description, Is.Not.Null.And.Contains("prop1"));
+        });
+    }
+
+    [Test]
+    public async Task Handle_NullResponse()
+    {
+        var wiremockProps = new WiremockResponseProperties();
+        wiremockProps.Properties.Add("Prop2", typeof(string));
+
+        var response = await _handler.Handle(new PropertyRequiredQuery
+        {
+            Responses = null,
+            MockProperties = wiremockProps,
+            Name = "UnitTest"
+        }, CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(response, Has.Count.EqualTo(0));
+        });
+    }
+    [Test]
+    public async Task Handle_NullProperties()
+    {
+        OpenApiResponses apiResponse = RequiredOpenApiSchema();
+
+        var response = await _handler.Handle(new PropertyRequiredQuery
+        {
+            Responses = apiResponse,
+            MockProperties = null,
+            Name = "UnitTest"
+        }, CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(response, Has.Count.EqualTo(0));
         });
     }
 
@@ -83,7 +119,7 @@ public class PropertyRequiredQueryHandlerTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(response.Count, Is.EqualTo(1));
+            Assert.That(response, Has.Count.EqualTo(1));
             Assert.That(response[0].Type, Is.EqualTo(ValidatorType.ResponsePropertyRequired));
             Assert.That(response[0].Name, Is.EqualTo("Request - UnitTest - prop1"));
             Assert.That(response[0].ValidationResult, Is.EqualTo(ValidationResult.Warning));
@@ -113,7 +149,7 @@ public class PropertyRequiredQueryHandlerTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(response.Count, Is.EqualTo(3));
+            Assert.That(response, Has.Count.EqualTo(3));
             Assert.That(response[0].Type, Is.EqualTo(ValidatorType.ResponsePropertyRequired));
             Assert.That(response[0].Name, Is.EqualTo("Request - UnitTest - prop1"));
             Assert.That(response[0].ValidationResult, Is.EqualTo(ValidationResult.Passed));

@@ -3,14 +3,14 @@ using System.Text.Json;
 
 namespace Wiremock.OpenAPIValidator.Commands;
 
-public class WiremockMappingsReaderCommand : IRequest<WiremockMappings>
+public class WiremockMappingsReaderCommand : IRequest<WiremockMappings?>
 {
     public string WiremockMappingPath { get; set; } = string.Empty;
 }
 
-internal class WiremockMappingsReaderCommandHandler : IRequestHandler<WiremockMappingsReaderCommand, WiremockMappings>
+internal class WiremockMappingsReaderCommandHandler : IRequestHandler<WiremockMappingsReaderCommand, WiremockMappings?>
 {
-    public async Task<WiremockMappings> Handle(WiremockMappingsReaderCommand request, CancellationToken cancellationToken)
+    public async Task<WiremockMappings?> Handle(WiremockMappingsReaderCommand request, CancellationToken cancellationToken)
     {
         if (!File.Exists(request.WiremockMappingPath))
         {

@@ -5,10 +5,10 @@ namespace Wiremock.OpenAPIValidator
     public class WiremockRequest
     {
         [JsonPropertyName("method")]
-        public string Method { get; set; }
+        public string Method { get; set; } = string.Empty;
 
         [JsonPropertyName("urlPattern")]
-        public string _urlPattern { get; set; }
+        public string _urlPattern { get; set; } = string.Empty;
 
         [System.Text.Json.Serialization.JsonIgnore]
         public string UrlPattern
@@ -18,6 +18,6 @@ namespace Wiremock.OpenAPIValidator
         }
 
         [JsonPropertyName("queryParameters")]
-        public dynamic QueryParameters { get; set; }
+        public dynamic? QueryParameters { get; set; }
     }
 }
