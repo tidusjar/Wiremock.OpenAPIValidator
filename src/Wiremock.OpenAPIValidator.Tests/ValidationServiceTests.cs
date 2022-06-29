@@ -72,6 +72,9 @@ namespace Wiremock.OpenAPIValidator.Tests
             _mocker.Setup<IMediator, Task<List<ValidatorNode>>>(x => x.Send(It.IsAny<PropertyRequiredQuery>(), It.IsAny<CancellationToken>()))
                .ReturnsAsync(new List<ValidatorNode>());
 
+            _mocker.Setup<IMediator, Task<List<ValidatorNode>>>(x => x.Send(It.IsAny<PropertyTypeQuery>(), It.IsAny<CancellationToken>()))
+               .ReturnsAsync(new List<ValidatorNode>());
+
             var result = await _service.ValidateAsync("test1", "test2");
 
             Assert.That(result, Is.Not.Null);

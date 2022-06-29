@@ -62,5 +62,5 @@ public class PropertyRequiredQueryHandler : IRequestHandler<PropertyRequiredQuer
         return Task.FromResult(response);
     }
 
-    private static string GetName(string name, string property) => QueryHelpers.GetName(true, name, property);
+    private static string GetName(string name, string property) => QueryHelpers.GetName(false, name, property);
 }
