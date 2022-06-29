@@ -66,6 +66,42 @@ public class PropertyRequiredQueryHandlerTests
     }
 
     [Test]
+    public async Task Handle_NullResponse()
+    {
+        var wiremockProps = new WiremockResponseProperties();
+        wiremockProps.Properties.Add("Prop2", typeof(string));
+
+        var response = await _handler.Handle(new PropertyRequiredQuery
+        {
+            Responses = null,
+            MockProperties = wiremockProps,
+            Name = "UnitTest"
+        }, CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(response, Has.Count.EqualTo(0));
+        });
+    }
+    [Test]
+    public async Task Handle_NullProperties()
+    {
+        OpenApiResponses apiResponse = RequiredOpenApiSchema();
+
+        var response = await _handler.Handle(new PropertyRequiredQuery
+        {
+            Responses = apiResponse,
+            MockProperties = null,
+            Name = "UnitTest"
+        }, CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(response, Has.Count.EqualTo(0));
+        });
+    }
+
+    [Test]
     public async Task Handle_MissingOptionalProperties()
     {
         var wiremockProps = new WiremockResponseProperties();

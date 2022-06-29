@@ -273,4 +273,19 @@ public class ParameterTypeQueryHandlerTests
             Assert.That(response.Description, Is.Not.Null.And.Contains("Param1"));
         });
     }
+
+    [Test]
+    public async Task Handle_NullParam()
+    {
+        var mockedParam = "{ \"Param1\": { \"equalTo\": \"2022-03-18T00:00:00.0000000\" } }";
+        var doc = JsonDocument.Parse(mockedParam);
+
+        var response = await _handler.Handle(new ParameterTypeQuery
+        {
+            Name = "UnitTest",
+            Param = null,
+            MockedParameters = doc.RootElement
+        }, CancellationToken.None);
+        Assert.That(resposne, Is.InstanceOf<ValidatorNode?>());
+    }
 }

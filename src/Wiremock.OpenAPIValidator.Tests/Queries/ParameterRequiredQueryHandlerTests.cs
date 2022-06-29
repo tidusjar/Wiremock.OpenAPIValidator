@@ -66,6 +66,20 @@ public class ParameterRequiredQueryHandlerTests
     }
 
 
+    [Test]
+    public async Task Handle_NullParam()
+    {
+        var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
+        var doc = JsonDocument.Parse(mockedParam);
+
+        var response = await _handler.Handle(new ParameterRequiredQuery
+        {
+            Name = "UnitTest",
+            Param = null,
+            MockedParameters = doc.RootElement
+        }, CancellationToken.None);
+        Assert.That(response, Is.InstanceOf<ValidatorNode?>());
+    }
 
     [Test]
     public async Task Handle_CorrectParam([Values] bool required)
