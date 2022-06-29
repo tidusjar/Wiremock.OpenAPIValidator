@@ -1,6 +1,7 @@
 ## WireMock Open API Validator
 
 [![Build](https://github.com/tidusjar/Wiremock.OpenAPIValidator/actions/workflows/build.yml/badge.svg)](https://github.com/tidusjar/Wiremock.OpenAPIValidator/actions/workflows/build.yml)
+[![Nuget](https://img.shields.io/nuget/v/Wiremock.OpenAPIValidator)](https://img.shields.io/nuget/v/Wiremock.OpenAPIValidator)
 
 This tool is intended to test your Wiremock stubs against an OpenAPI (v3) specification. This will check the following
 
@@ -19,7 +20,7 @@ This tool is intended to test your Wiremock stubs against an OpenAPI (v3) specif
 
 ### Example
 
-`dotnet WiremockOpenApiValidator -o "C:/git/MyApi/OpenApi.yml" -w "C:/git/wiremock/stubs/mappings"`
+`wiremockopenapi -o "C:/git/MyApi/OpenApi.yml" -w "C:/git/wiremock/stubs/mappings"`
 
 ## Usage
 
