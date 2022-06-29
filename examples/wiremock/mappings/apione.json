@@ -1,0 +1,27 @@
+{
+    "request": {
+        "method": "GET",
+        "urlPattern": "/api/v1/Example/ApiOne\\?.*",
+        "queryParameters": {
+            "Test": {
+                "equalTo": "All"
+            },
+            "UserId": {
+                "matches": "^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$"
+            },
+            "From": {
+                "equalTo": "2022-03-18T00:00:00.0000000"
+            },
+            "To": {
+                "equalTo": "2022-03-31T13:00:00.0000000"
+            }
+        }
+    },
+    "response": {
+        "status": 200,
+        "bodyFileName": "apione.json",
+        "headers": {
+            "Content-Type": "application/json"
+        }
+    }
+}

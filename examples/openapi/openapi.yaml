@@ -1,0 +1,217 @@
+openapi: 3.0.1
+info:
+  title: Example.Api
+  description: Example API
+  version: '1.0.0'
+paths:
+  /api/v1/Example/ApiOne:
+    get:
+      tags:
+        - Example
+      operationId: GetApiOne
+      parameters:
+        - name: Test
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Test'
+        - name: UserId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: From
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: To
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Success
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/CounterModel'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CounterModel'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /api/v1/Example/ApiTwo:
+    get:
+      tags:
+        - ApiTwo
+      operationId: GetApiTwo
+      parameters:
+        - name: UserId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: From
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: To
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Success
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/CounterModel'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CounterModel'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /api/v1/Example/ApiThree:
+    get:
+      tags:
+        - Example
+      operationId: ApiThree
+      parameters:
+        - name: UserId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: From
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: To
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: OtherQuery
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/problem+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InfoModel'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InfoModel'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+components:
+  schemas:
+    Delta:
+      required:
+        - first
+        - second
+      type: object
+      properties:
+        first:
+          type: integer
+          format: int32
+        second:
+          type: integer
+          format: int32
+      additionalProperties: false
+    CounterModel:
+      required:
+        - value
+      type: object
+      properties:
+        value:
+          type: string
+        delta:
+          $ref: '#/components/schemas/Delta'
+      additionalProperties: false
+    Test:
+      enum:
+        - All
+        - One
+        - Two
+      type: string
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        status:
+          type: integer
+          format: int32
+          nullable: true
+        detail:
+          type: string
+          nullable: true
+        instance:
+          type: string
+          nullable: true
+      additionalProperties: { }
+    InfoModel:
+      required:
+        - count
+        - timestamp
+        - unixTimestamp
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        unixTimestamp:
+          type: integer
+          format: int64
+          readOnly: true
+        count:
+          type: integer
+          format: int64
+      additionalProperties: false

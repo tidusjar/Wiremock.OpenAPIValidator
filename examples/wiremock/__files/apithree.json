@@ -1,0 +1,32 @@
+[
+   {
+      "timestamp": "2021-01-01T00:00:00Z",
+      "unixTimestamp": 1609459200000,
+      "count": 4
+   },
+   {
+      "timestamp": "2021-01-31T00:00:00Z",
+      "unixTimestamp": 1612051200000,
+      "count": 3
+   },
+   {
+      "timestamp": "2021-06-01T00:00:00Z",
+      "unixTimestamp": 1622505600000,
+      "count": 12
+   },
+   {
+      "timestamp": "2021-06-30T00:00:00Z",
+      "unixTimestamp": 1625011200000,
+      "count": 12
+   },
+   {
+      "timestamp": "2021-12-01T00:00:00Z",
+      "unixTimestamp": 1638316800000,
+      "count": 15
+   },
+   {
+      "timestamp": "2021-12-31T00:00:00Z",
+      "unixTimestamp": 1640908800000,
+      "count": 8
+   }
+]
