@@ -2,7 +2,6 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<Version>1.0.0</Version>
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -13,7 +12,6 @@
 		<AssemblyTitle>Wiremock Open API Validator</AssemblyTitle>
 		<Authors>TidusJar</Authors>
 		<Description>Validate your wiremock mappings against an OpenAPI v3 Specification</Description>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<IncludeSymbols>true</IncludeSymbols>
 		<MinVerTagPrefix>v</MinVerTagPrefix>
 		<PackageDescription>Validate your wiremock mappings against an OpenAPI v3 Specification</PackageDescription>
