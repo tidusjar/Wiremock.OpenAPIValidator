@@ -31,5 +31,19 @@ namespace Wiremock.OpenAPIValidator.Tests.Commands
                 Assert.That(response, Is.Not.Null);
             });
         }
+
+        [Test]
+        public async Task Handle_BadParentDirectory()
+        {
+            var response = await _handler.Handle(new WiremockResponseReaderCommand
+            {
+                WiremockMappingPath = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory())
+            }, CancellationToken.None);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(response, Is.Not.Null);
+            });
+        }
     }
 }

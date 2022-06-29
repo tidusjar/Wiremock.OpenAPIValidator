@@ -11,7 +11,7 @@ public class WiremockResponseReaderCommand : IRequest<WiremockResponseProperties
     public string MockResponseFileName { get; set; } = string.Empty;
 }
 
-internal class WiremockResponseReaderCommandHandler : IRequestHandler<WiremockResponseReaderCommand, WiremockResponseProperties>
+public class WiremockResponseReaderCommandHandler : IRequestHandler<WiremockResponseReaderCommand, WiremockResponseProperties>
 {
     public Task<WiremockResponseProperties> Handle(WiremockResponseReaderCommand request, CancellationToken cancellationToken)
     {
