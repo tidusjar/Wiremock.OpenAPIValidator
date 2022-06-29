@@ -43,7 +43,7 @@ namespace Wiremock.OpenAPIValidator.Tests
 
             var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
             var doc = JsonDocument.Parse(mockedParam);
-            _mocker.Setup<IMediator, Task<WiremockMappings>>(x => x.Send(It.IsAny<WiremockMappingsReaderCommand>(), It.IsAny<CancellationToken>()))
+            _mocker.Setup<IMediator, Task<WiremockMappings?>>(x => x.Send(It.IsAny<WiremockMappingsReaderCommand>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new WiremockMappings
                 {
                     Request = new WiremockRequest

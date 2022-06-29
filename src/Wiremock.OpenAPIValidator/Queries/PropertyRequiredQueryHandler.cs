@@ -25,26 +25,26 @@ public class PropertyRequiredQueryHandler : IRequestHandler<PropertyRequiredQuer
         var jsonBody = okResponse.Value.Content.First(x => x.Key == "application/json");
         var schema = jsonBody.Value.Schema;
 
-        foreach (var property in schema.Properties)
+        foreach (var property in schema.Properties.Select(p => p.Key))
         {
-            var mockedProperty = request.MockProperties.Properties.TryGetValue(property.Key, out var mockedValue);
-            var required = schema.Required.Any(x => x == property.Key);
+            var mockedProperty = request.MockProperties.Properties.TryGetValue(property, out var mockedValue);
+            var required = schema.Required.Any(x => x == property);
             if (!mockedProperty && required)
             {
                 response.Add(new ValidatorNode
                 {
-                    Name = GetName(request.Name, property.Key),
-                    Description = $"Required Response Property '{property.Key}' is not present in the mocked response",
+                    Name = GetName(request.Name, property),
+                    Description = $"Required Response Property '{property}' is not present in the mocked response",
                     Type = ValidatorType.ResponsePropertyRequired,
                     ValidationResult = ValidationResult.Failed
                 });
             }
-            else if (!mockedProperty && !required)
+            else if (!mockedProperty)
             {
                 response.Add(new ValidatorNode
                 {
-                    Name = GetName(request.Name, property.Key),
-                    Description = $"Optional Response Property '{property.Key}' is not present in the mocked response",
+                    Name = GetName(request.Name, property),
+                    Description = $"Optional Response Property '{property}' is not present in the mocked response",
                     Type = ValidatorType.ResponsePropertyRequired,
                     ValidationResult = ValidationResult.Warning
                 });
@@ -53,7 +53,7 @@ public class PropertyRequiredQueryHandler : IRequestHandler<PropertyRequiredQuer
             {
                 response.Add(new ValidatorNode
                 {
-                    Name = GetName(request.Name, property.Key),
+                    Name = GetName(request.Name, property),
                     Type = ValidatorType.ResponsePropertyRequired,
                     ValidationResult = ValidationResult.Passed
                 });

@@ -5,7 +5,7 @@ using Spectre.Console;
 
 namespace Wiremock.OpenAPIValidator
 {
-    internal partial class Program
+    internal static class Program
     {
         static async Task<int> Main(string[] args)
         {

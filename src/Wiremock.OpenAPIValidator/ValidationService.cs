@@ -97,7 +97,7 @@ public class ValidationService
                 Name = operation.OperationId,
                 Responses = operation.Responses
             }));
-        };
+        }
 
         return validation;
     }
