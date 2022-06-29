@@ -39,7 +39,7 @@ namespace Wiremock.OpenAPIValidator
 
             if (string.IsNullOrEmpty(wireMockPath) || string.IsNullOrEmpty(openApiPath))
             {
-                return 0;
+                return 1;
             }
 
 
