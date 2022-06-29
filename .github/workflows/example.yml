@@ -1,0 +1,23 @@
+name: Example Workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting
+        fetch-depth: 0
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+    - name: Install Wiremock OpenAPI Validator Tool
+      run: dotnet tool install --global Wiremock.OpenAPIValidator
+    - name: Run Validator
+      run: |
+        wiremockopenapi -o "./examples/openapi/openapi.yml" -w "./example/wiremock/mappings"
