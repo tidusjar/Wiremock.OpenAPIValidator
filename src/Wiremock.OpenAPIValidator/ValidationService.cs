@@ -97,6 +97,16 @@ public class ValidationService
                 Name = operation.OperationId,
                 Responses = operation.Responses
             }));
+
+            // Response Property Type
+            validation.Results.AddRange(await _mediator.Send(new PropertyTypeQuery
+            {
+                MockProperties = mockedResponse,
+                Name = operation.OperationId,
+                Responses = operation.Responses
+            }));
+
+
         }
 
         return validation;

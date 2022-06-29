@@ -8,5 +8,6 @@
         Response,
         UrlMatch,
         ResponsePropertyRequired,
+        ResponsePropertyType,
     }
 }
