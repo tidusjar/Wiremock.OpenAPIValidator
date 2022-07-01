@@ -164,6 +164,7 @@ components:
     CounterModel:
       required:
         - value
+        - delta
       type: object
       properties:
         value:
