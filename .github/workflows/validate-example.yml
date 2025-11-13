@@ -1,0 +1,91 @@
+# Example workflow for WireMock OpenAPI Validator
+# This file demonstrates how to use the action in your repository
+
+name: Validate WireMock Mappings
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      # Only run when OpenAPI specs or WireMock mappings change
+      - 'examples/OpenApiSpecs/**'
+      - 'examples/WiremockMappings/**'
+      - '.github/workflows/validate-example.yml'
+  push:
+    branches: [main]
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: read
+  pull-requests: write  # Required for PR comments
+
+jobs:
+  validate:
+    name: Validate Mocks Against OpenAPI
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Validate WireMock Mappings
+        id: validate
+        uses: ./  # Use local action (change to your-org/wiremock-openapi-validator@v1 in production)
+        with:
+          openapi-path: 'examples/OpenApiSpecs/PetStore.yml'
+          wiremock-path: 'examples/WiremockMappings'
+          fail-on-warnings: false
+          post-comment: true
+
+      - name: Display Validation Summary
+        if: always()
+        run: |
+          echo "### 📊 Validation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total Checks**: ${{ steps.validate.outputs.total-checks }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Passed**: ✅ ${{ steps.validate.outputs.passed-checks }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Warnings**: ⚠️ ${{ steps.validate.outputs.warning-checks }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Failed**: ❌ ${{ steps.validate.outputs.failed-checks }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Errors**: 🔴 ${{ steps.validate.outputs.error-checks }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.validate.outputs.validation-passed }}" == "true" ]; then
+            echo "✅ **All validations passed!**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Validation failed - see details above**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload Validation Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-results
+          path: validation-results.json
+          retention-days: 30
+
+  # Example: Multiple specs validation
+  validate-multiple:
+    name: Validate Multiple APIs
+    runs-on: ubuntu-latest
+    if: false  # Disabled by default - enable as needed
+
+    strategy:
+      fail-fast: false
+      matrix:
+        api:
+          - name: 'PetStore'
+            spec: 'examples/OpenApiSpecs/PetStore.yml'
+            mappings: 'examples/WiremockMappings'
+          # Add more APIs here:
+          # - name: 'UserService'
+          #   spec: 'specs/user-service.yml'
+          #   mappings: 'mocks/user-service'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate ${{ matrix.api.name }}
+        uses: ./
+        with:
+          openapi-path: ${{ matrix.api.spec }}
+          wiremock-path: ${{ matrix.api.mappings }}

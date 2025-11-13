@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using Wiremock.OpenAPIValidator.Commands;
+using Wiremock.OpenAPIValidator.Formatters;
 using Wiremock.OpenAPIValidator.Queries;
 
 namespace Wiremock.OpenAPIValidator
@@ -10,46 +11,54 @@ namespace Wiremock.OpenAPIValidator
     {
         static async Task<int> Main(string[] args)
         {
-            var wireMockPath = string.Empty;
-            var openApiPath = string.Empty;
-            Parser.Default.ParseArguments<Options>(args)
-                   .WithParsed(o =>
-                   {
-                       if (File.Exists(o.OpenApiPath))
-                       {
-                           AnsiConsole.Write(new Markup($"[green]OpenApiPath: [/]"));
-                           AnsiConsole.Write(new TextPath(o.OpenApiPath));
-                           openApiPath = o.OpenApiPath;
-                       }
-                       else
-                       {
-                           AnsiConsole.Write(new Markup($"[red]No File was found at: '{o.OpenApiPath}'[/]"));
-                       }
+            Options? parsedOptions = null;
+            var parseResult = Parser.Default.ParseArguments<Options>(args);
 
-                       if (Directory.Exists(o.WiremockMappingsPath))
-                       {
-                           AnsiConsole.Write(new Markup("[green]Wiremock Mappings Path: [/]"));
-                           AnsiConsole.Write(new TextPath(o.WiremockMappingsPath));
-                           wireMockPath = o.WiremockMappingsPath;
-                       }
-                       else
-                       {
-                           AnsiConsole.Write(new Markup($"[red]No Directory was found at: '{o.WiremockMappingsPath}'[/]"));
-                       }
-                   });
+            parseResult.WithParsed(o => parsedOptions = o);
 
-            if (string.IsNullOrEmpty(wireMockPath) || string.IsNullOrEmpty(openApiPath))
+            if (parsedOptions == null)
             {
-                return 1;
+                return 2; // Invalid arguments
             }
 
+            // Validate paths (show output unless quiet mode or non-console format)
+            var showPathValidation = parsedOptions.Format.ToLower() == "console" && !parsedOptions.Quiet;
 
-            AnsiConsole.Write(new Rule());
-            AnsiConsole.Write(new FigletText("Wiremock Open API Validator")
-                .Centered()
-                .Color(Color.Aquamarine1));
+            if (!File.Exists(parsedOptions.OpenApiPath))
+            {
+                if (showPathValidation)
+                {
+                    AnsiConsole.Write(new Markup($"[red]No File was found at: '{parsedOptions.OpenApiPath}'[/]"));
+                }
+                else
+                {
+                    Console.Error.WriteLine($"Error: OpenAPI file not found at '{parsedOptions.OpenApiPath}'");
+                }
+                return 2;
+            }
 
-            AnsiConsole.Write(new Rule());
+            if (!Directory.Exists(parsedOptions.WiremockMappingsPath))
+            {
+                if (showPathValidation)
+                {
+                    AnsiConsole.Write(new Markup($"[red]No Directory was found at: '{parsedOptions.WiremockMappingsPath}'[/]"));
+                }
+                else
+                {
+                    Console.Error.WriteLine($"Error: WireMock mappings directory not found at '{parsedOptions.WiremockMappingsPath}'");
+                }
+                return 2;
+            }
+
+            // Show paths if in console mode and not quiet
+            if (showPathValidation)
+            {
+                AnsiConsole.Write(new Markup($"[green]OpenApiPath: [/]"));
+                AnsiConsole.Write(new TextPath(parsedOptions.OpenApiPath));
+                AnsiConsole.Write(new Markup("[green]Wiremock Mappings Path: [/]"));
+                AnsiConsole.Write(new TextPath(parsedOptions.WiremockMappingsPath));
+            }
+
 
             var services = new ServiceCollection();
 
@@ -69,74 +78,54 @@ namespace Wiremock.OpenAPIValidator
             services.AddTransient<ServiceInfromationQueryHandler>();
             services.AddTransient<UrlPathMatchQueryHandler>();
 
+            // Register formatters
+            services.AddTransient<ConsoleOutputFormatter>();
+            services.AddTransient<JsonOutputFormatter>();
+            services.AddTransient<JUnitXmlOutputFormatter>();
+            services.AddTransient<GitHubActionsFormatter>();
+
             // Register validation service
             services.AddSingleton<ValidationService>();
 
             var provider = services.BuildServiceProvider();
             var validationService = provider.GetRequiredService<ValidationService>();
 
-            var validationResult = await validationService.ValidateAsync(openApiPath, wireMockPath);
+            var validationResult = await validationService.ValidateAsync(parsedOptions.OpenApiPath, parsedOptions.WiremockMappingsPath);
 
-            var table = new Table()
+            // Select appropriate formatter
+            IOutputFormatter formatter = parsedOptions.Format.ToLower() switch
             {
-                Title = new TableTitle("Open API Wiremock Results", new Style(Color.Aquamarine1))
+                "json" => provider.GetRequiredService<JsonOutputFormatter>(),
+                "junit" => provider.GetRequiredService<JUnitXmlOutputFormatter>(),
+                "github" => provider.GetRequiredService<GitHubActionsFormatter>(),
+                "console" or _ => provider.GetRequiredService<ConsoleOutputFormatter>()
             };
-            table.AddColumn("Name");
-            table.AddColumn("Check Type");
-            table.AddColumn("Result");
-            table.AddColumn("Reason");
 
-            foreach (var validation in validationResult.Results)
+            // Format the output
+            var output = formatter.Format(validationResult, parsedOptions);
+
+            // Write output to file or console
+            if (!string.IsNullOrEmpty(parsedOptions.OutputFile))
             {
-                table.AddRow(new Text(validation.Name), new Text(validation.Type.ToString()), RenderStatus(validation), new Text(validation.Description));
+                await File.WriteAllTextAsync(parsedOptions.OutputFile, output);
+                if (!parsedOptions.Quiet)
+                {
+                    Console.WriteLine($"Results written to: {parsedOptions.OutputFile}");
+                }
+            }
+            else if (!string.IsNullOrEmpty(output))
+            {
+                // Only write to console if there's output (console formatter writes directly)
+                Console.WriteLine(output);
             }
 
-            AnsiConsole.Write(table);
-
-            AnsiConsole.Write(new BarChart()
-                .Label("[green bold underline]Test Results[/]")
-                .CenterLabel()
-                .AddItem("Passed", validationResult.Results.Count(x => x.ValidationResult == ValidationResult.Passed), Color.Green)
-                .AddItem("Warning", validationResult.Results.Count(x => x.ValidationResult == ValidationResult.Warning), Color.Yellow)
-                .AddItem("Failed", validationResult.Results.Count(x => x.ValidationResult == ValidationResult.Failed), Color.Red)
-                .AddItem("Error", validationResult.Results.Count(x => x.ValidationResult == ValidationResult.Error), Color.DarkRed));
-
-            if (validationResult.Results.Any(x => x.ValidationResult == ValidationResult.Failed))
-            {
-                var grouped = validationResult.Results.Where(x => x.ValidationResult == ValidationResult.Failed).GroupBy(x => x.Type);
-                AnsiConsole.Write(new BarChart()
-                   .Label("[red bold underline]Failure Type Breakdown[/]")
-                   .CenterLabel()
-                   .AddItems(grouped, (item) => new BarChartItem(item.Key.ToString(), item.Count())));
-            }
-            if (validationResult.Results.Any(x => x.ValidationResult == ValidationResult.Warning))
-            {
-                var rnd = new Random();
-                var grouped = validationResult.Results.Where(x => x.ValidationResult == ValidationResult.Warning).GroupBy(x => x.Type);
-                AnsiConsole.Write(new BarChart()
-                   .Label("[yellow bold underline]Warning Type Breakdown[/]")
-                   .CenterLabel()
-                   .AddItems(grouped, (item) => new BarChartItem(item.Key.ToString(), item.Count(), Color.FromInt32(rnd.Next(255)))));
-            }
-
+            // Return exit code based on validation results
             if (validationResult.Results.Any(x => x.ValidationResult == ValidationResult.Failed || x.ValidationResult == ValidationResult.Error))
             {
                 return 1;
             }
-            else
-            {
-                return 0;
-            }
-        }
 
-        private static Markup RenderStatus(ValidatorNode validation) =>
-            validation.ValidationResult switch
-            {
-                ValidationResult.Passed => new Markup("[Green]Passed[/]"),
-                ValidationResult.Warning => new Markup("[black on yellow]Warning[/]"),
-                ValidationResult.Failed => new Markup("[black on red]Failed[/]"),
-                ValidationResult.Error => new Markup("[white on darkred]Error[/]"),
-                _ => throw new NotImplementedException(),
-            };
+            return 0;
+        }
     }
 }

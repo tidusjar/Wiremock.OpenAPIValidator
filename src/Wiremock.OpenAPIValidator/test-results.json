@@ -1,0 +1,229 @@
+{
+  "timestamp": "2025-11-13T15:21:46.7370621Z",
+  "summary": {
+    "total": 36,
+    "passed": 30,
+    "warning": 6,
+    "failed": 0,
+    "error": 0,
+    "isValid": false
+  },
+  "results": [
+    {
+      "name": "/api/v1/Example/ApiOne\\\\?.*",
+      "type": "UrlMatch",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "GetApiOne",
+      "type": "Method",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "GetApiOne - Test",
+      "type": "ParamRequired",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "GetApiOne - Test",
+      "type": "ParamType",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "GetApiOne - UserId",
+      "type": "ParamRequired",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "GetApiOne - UserId",
+      "type": "ParamType",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "GetApiOne - From",
+      "type": "ParamRequired",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "GetApiOne - From",
+      "type": "ParamType",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "GetApiOne - To",
+      "type": "ParamRequired",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "GetApiOne - To",
+      "type": "ParamType",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "Response - GetApiOne - value",
+      "type": "ResponsePropertyRequired",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "Response - GetApiOne - delta",
+      "type": "ResponsePropertyRequired",
+      "result": "Warning",
+      "description": "Optional Response Property \u0027delta\u0027 is not present in the mocked response"
+    },
+    {
+      "name": "Response - GetApiOne - value",
+      "type": "ResponsePropertyType",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "Response - GetApiOne - delta",
+      "type": "ResponsePropertyType",
+      "result": "Warning",
+      "description": "Property \u0027delta\u0027 is not present in the mock"
+    },
+    {
+      "name": "/api/v1/Example/ApiThree\\\\?.*",
+      "type": "UrlMatch",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "ApiThree",
+      "type": "Method",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "ApiThree - UserId",
+      "type": "ParamRequired",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "ApiThree - UserId",
+      "type": "ParamType",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "ApiThree - From",
+      "type": "ParamRequired",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "ApiThree - From",
+      "type": "ParamType",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "ApiThree - To",
+      "type": "ParamRequired",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "ApiThree - To",
+      "type": "ParamType",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "ApiThree - OtherQuery",
+      "type": "ParamRequired",
+      "result": "Warning",
+      "description": "Optional Property \u0027OtherQuery\u0027 is not present in the mock"
+    },
+    {
+      "name": "ApiThree - OtherQuery",
+      "type": "ParamType",
+      "result": "Warning",
+      "description": "Parameter OtherQuery is not required and doesn\u0027t exist in the mock. Cannot check the Type mappings."
+    },
+    {
+      "name": "/api/v1/Example/ApiTwo\\\\?.*",
+      "type": "UrlMatch",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "GetApiTwo",
+      "type": "Method",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "GetApiTwo - UserId",
+      "type": "ParamRequired",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "GetApiTwo - UserId",
+      "type": "ParamType",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "GetApiTwo - From",
+      "type": "ParamRequired",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "GetApiTwo - From",
+      "type": "ParamType",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "GetApiTwo - To",
+      "type": "ParamRequired",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "GetApiTwo - To",
+      "type": "ParamType",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "Response - GetApiTwo - value",
+      "type": "ResponsePropertyRequired",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "Response - GetApiTwo - delta",
+      "type": "ResponsePropertyRequired",
+      "result": "Warning",
+      "description": "Optional Response Property \u0027delta\u0027 is not present in the mocked response"
+    },
+    {
+      "name": "Response - GetApiTwo - value",
+      "type": "ResponsePropertyType",
+      "result": "Passed",
+      "description": ""
+    },
+    {
+      "name": "Response - GetApiTwo - delta",
+      "type": "ResponsePropertyType",
+      "result": "Warning",
+      "description": "Property \u0027delta\u0027 is not present in the mock"
+    }
+  ]
+}

@@ -1,0 +1,214 @@
+name: 'WireMock OpenAPI Validator'
+description: 'Validates WireMock stub mappings against OpenAPI specifications in your PR pipeline'
+branding:
+  icon: 'shield-check'
+  color: 'green'
+
+inputs:
+  openapi-path:
+    description: 'Path to the OpenAPI specification file (YAML or JSON)'
+    required: true
+  wiremock-path:
+    description: 'Path to the WireMock mappings directory'
+    required: true
+  fail-on-warnings:
+    description: 'Fail the build if warnings are found (default: false)'
+    required: false
+    default: 'false'
+  post-comment:
+    description: 'Post validation results as a PR comment (default: true)'
+    required: false
+    default: 'true'
+  github-token:
+    description: 'GitHub token for posting PR comments (default: GITHUB_TOKEN)'
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  validation-passed:
+    description: 'Whether all validations passed (true/false)'
+    value: ${{ steps.validate.outputs.passed }}
+  total-checks:
+    description: 'Total number of validation checks'
+    value: ${{ steps.parse-results.outputs.total }}
+  passed-checks:
+    description: 'Number of passed checks'
+    value: ${{ steps.parse-results.outputs.passed }}
+  failed-checks:
+    description: 'Number of failed checks'
+    value: ${{ steps.parse-results.outputs.failed }}
+  warning-checks:
+    description: 'Number of warnings'
+    value: ${{ steps.parse-results.outputs.warnings }}
+  error-checks:
+    description: 'Number of errors'
+    value: ${{ steps.parse-results.outputs.errors }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Install WireMock OpenAPI Validator
+      shell: bash
+      run: dotnet tool install --global Wiremock.OpenAPIValidator || dotnet tool update --global Wiremock.OpenAPIValidator
+
+    - name: Run Validation
+      id: validate
+      shell: bash
+      run: |
+        set +e
+        wiremockopenapi -o "${{ inputs.openapi-path }}" -w "${{ inputs.wiremock-path }}" --format json --output-file validation-results.json --quiet
+        EXIT_CODE=$?
+        set -e
+
+        echo "exit-code=$EXIT_CODE" >> $GITHUB_OUTPUT
+
+        if [ $EXIT_CODE -eq 0 ]; then
+          echo "passed=true" >> $GITHUB_OUTPUT
+        else
+          echo "passed=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Parse Results
+      id: parse-results
+      shell: bash
+      run: |
+        if [ -f validation-results.json ]; then
+          TOTAL=$(jq '.summary.total' validation-results.json)
+          PASSED=$(jq '.summary.passed' validation-results.json)
+          FAILED=$(jq '.summary.failed' validation-results.json)
+          WARNINGS=$(jq '.summary.warning' validation-results.json)
+          ERRORS=$(jq '.summary.error' validation-results.json)
+
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+          echo "warnings=$WARNINGS" >> $GITHUB_OUTPUT
+          echo "errors=$ERRORS" >> $GITHUB_OUTPUT
+        else
+          echo "Error: validation-results.json not found"
+          exit 1
+        fi
+
+    - name: Create PR Comment
+      if: ${{ inputs.post-comment == 'true' && github.event_name == 'pull_request' }}
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const fs = require('fs');
+          const results = JSON.parse(fs.readFileSync('validation-results.json', 'utf8'));
+
+          const passed = results.summary.passed;
+          const failed = results.summary.failed;
+          const warnings = results.summary.warning;
+          const errors = results.summary.error;
+          const total = results.summary.total;
+
+          const passRate = total > 0 ? ((passed / total) * 100).toFixed(1) : '0';
+
+          let statusEmoji = '✅';
+          let statusText = 'All validations passed!';
+
+          if (failed > 0 || errors > 0) {
+            statusEmoji = '❌';
+            statusText = 'Validation failures detected';
+          } else if (warnings > 0) {
+            statusEmoji = '⚠️';
+            statusText = 'Validation passed with warnings';
+          }
+
+          let commentBody = `## ${statusEmoji} WireMock OpenAPI Validation Results\n\n`;
+          commentBody += `**${statusText}**\n\n`;
+          commentBody += `### Summary\n\n`;
+          commentBody += `| Metric | Count |\n`;
+          commentBody += `|--------|-------|\n`;
+          commentBody += `| Total Checks | ${total} |\n`;
+          commentBody += `| ✅ Passed | ${passed} |\n`;
+          commentBody += `| ⚠️ Warnings | ${warnings} |\n`;
+          commentBody += `| ❌ Failed | ${failed} |\n`;
+          commentBody += `| 🔴 Errors | ${errors} |\n`;
+          commentBody += `| **Pass Rate** | **${passRate}%** |\n\n`;
+
+          // Add failure/error details if any
+          if (failed > 0 || errors > 0) {
+            commentBody += `### ❌ Failures and Errors\n\n`;
+            const failuresAndErrors = results.results.filter(r =>
+              r.result === 'Failed' || r.result === 'Error'
+            );
+
+            for (const result of failuresAndErrors.slice(0, 20)) {
+              const emoji = result.result === 'Failed' ? '❌' : '🔴';
+              commentBody += `- ${emoji} **${result.name}** (${result.type})\n`;
+              commentBody += `  > ${result.description}\n\n`;
+            }
+
+            if (failuresAndErrors.length > 20) {
+              commentBody += `\n_... and ${failuresAndErrors.length - 20} more failures/errors_\n\n`;
+            }
+          }
+
+          // Add warning details if any (limit to 10)
+          if (warnings > 0) {
+            commentBody += `### ⚠️ Warnings\n\n`;
+            const warningResults = results.results.filter(r => r.result === 'Warning');
+
+            for (const result of warningResults.slice(0, 10)) {
+              commentBody += `- ⚠️ **${result.name}** (${result.type})\n`;
+              commentBody += `  > ${result.description}\n\n`;
+            }
+
+            if (warningResults.length > 10) {
+              commentBody += `\n_... and ${warningResults.length - 10} more warnings_\n\n`;
+            }
+          }
+
+          commentBody += `\n---\n`;
+          commentBody += `*Generated by [WireMock OpenAPI Validator](https://github.com/Wiremock.OpenAPIValidator)*`;
+
+          // Find existing comment
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+
+          const botComment = comments.find(comment =>
+            comment.user.type === 'Bot' &&
+            comment.body.includes('WireMock OpenAPI Validation Results')
+          );
+
+          // Update or create comment
+          if (botComment) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: commentBody
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody
+            });
+          }
+
+    - name: Check Warnings
+      if: ${{ inputs.fail-on-warnings == 'true' && steps.parse-results.outputs.warnings > 0 }}
+      shell: bash
+      run: |
+        echo "::error::Build failed due to warnings (fail-on-warnings is enabled)"
+        exit 1
+
+    - name: Check Validation Status
+      if: ${{ steps.validate.outputs.passed == 'false' }}
+      shell: bash
+      run: |
+        echo "::error::WireMock OpenAPI validation failed"
+        exit 1
