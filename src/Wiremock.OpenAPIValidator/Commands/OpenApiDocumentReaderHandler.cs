@@ -1,15 +1,14 @@
-﻿using MediatR;
-using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
 
 namespace Wiremock.OpenAPIValidator.Commands;
 
-public class OpenApiDocumentReaderCommand : IRequest<OpenApiDocument>
+public class OpenApiDocumentReaderCommand
 {
     public string OpenApiDocLocation { get; set; } = string.Empty;
 }
 
-internal class OpenApiDocumentReaderHandler : IRequestHandler<OpenApiDocumentReaderCommand, OpenApiDocument>
+public class OpenApiDocumentReaderHandler
 {
     public async Task<OpenApiDocument> Handle(OpenApiDocumentReaderCommand request, CancellationToken cancellationToken)
     {

@@ -1,12 +1,10 @@
-﻿using MediatR;
+﻿namespace Wiremock.OpenAPIValidator.Queries;
 
-namespace Wiremock.OpenAPIValidator.Queries;
-
-public class WireMockMappingsQuery : IRequest<string[]>
+public class WireMockMappingsQuery
 {
     public string MappingsPath { get; set; } = string.Empty;
 }
-internal class WireMockMappingsQueryHandler : IRequestHandler<WireMockMappingsQuery, string[]>
+public class WireMockMappingsQueryHandler
 {
     public Task<string[]> Handle(WireMockMappingsQuery request, CancellationToken cancellationToken) =>
         Task.FromResult(Directory.GetFiles(request.MappingsPath));

@@ -1,5 +1,4 @@
-﻿using MediatR;
-using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi.Models;
 using Moq;
 using Moq.AutoMock;
 using System;
@@ -29,7 +28,7 @@ namespace Wiremock.OpenAPIValidator.Tests
         [Test]
         public async Task SuccessfulValidation()
         {
-            _mocker.Setup<IMediator, Task<OpenApiDocument>>(x => x.Send(It.IsAny<OpenApiDocumentReaderCommand>(), It.IsAny<CancellationToken>()))
+            _mocker.Setup<IMediator, Task<OpenApiDocument>>(x => x.Send<OpenApiDocument>(It.IsAny<OpenApiDocumentReaderCommand>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new OpenApiDocument
                 {
                     Paths = new OpenApiPaths
@@ -38,12 +37,12 @@ namespace Wiremock.OpenAPIValidator.Tests
                     }
                 });
 
-            _mocker.Setup<IMediator, Task<string[]>>(x => x.Send(It.IsAny<WireMockMappingsQuery>(), It.IsAny<CancellationToken>()))
+            _mocker.Setup<IMediator, Task<string[]>>(x => x.Send<string[]>(It.IsAny<WireMockMappingsQuery>(), It.IsAny<CancellationToken>()))
                .ReturnsAsync(new[] { "" });
 
             var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
             var doc = JsonDocument.Parse(mockedParam);
-            _mocker.Setup<IMediator, Task<WiremockMappings?>>(x => x.Send(It.IsAny<WiremockMappingsReaderCommand>(), It.IsAny<CancellationToken>()))
+            _mocker.Setup<IMediator, Task<WiremockMappings?>>(x => x.Send<WiremockMappings?>(It.IsAny<WiremockMappingsReaderCommand>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new WiremockMappings
                 {
                     Request = new WiremockRequest
@@ -57,22 +56,26 @@ namespace Wiremock.OpenAPIValidator.Tests
                     }
                 });
 
-            _mocker.Setup<IMediator, Task<(ValidatorNode, OpenApiPathItem?)>>(x => x.Send(It.IsAny<UrlPathMatchQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((new ValidatorNode(), new OpenApiPathItem
+            _mocker.Setup<IMediator, Task<UrlPathMatchResult>>(x => x.Send<UrlPathMatchResult>(It.IsAny<UrlPathMatchQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new UrlPathMatchResult
                 {
-                    Operations = new Dictionary<OperationType, OpenApiOperation> { { OperationType.Put, new OpenApiOperation {
-                        OperationId = "UnitTest",
-                        Parameters = new List<OpenApiParameter> { new OpenApiParameter {  Required = true, Name = "TestParam"} }
-                    } } }
-                }));
+                    ValidationNode = new ValidatorNode(),
+                    MatchedPath = new OpenApiPathItem
+                    {
+                        Operations = new Dictionary<OperationType, OpenApiOperation> { { OperationType.Put, new OpenApiOperation {
+                            OperationId = "UnitTest",
+                            Parameters = new List<OpenApiParameter> { new OpenApiParameter {  Required = true, Name = "TestParam"} }
+                        } } }
+                    }
+                });
 
-            _mocker.Setup<IMediator, Task<WiremockResponseProperties>>(x => x.Send(It.IsAny<WiremockResponseReaderCommand>(), It.IsAny<CancellationToken>()))
+            _mocker.Setup<IMediator, Task<WiremockResponseProperties>>(x => x.Send<WiremockResponseProperties>(It.IsAny<WiremockResponseReaderCommand>(), It.IsAny<CancellationToken>()))
                .ReturnsAsync(new WiremockResponseProperties());
 
-            _mocker.Setup<IMediator, Task<List<ValidatorNode>>>(x => x.Send(It.IsAny<PropertyRequiredQuery>(), It.IsAny<CancellationToken>()))
+            _mocker.Setup<IMediator, Task<List<ValidatorNode>>>(x => x.Send<List<ValidatorNode>>(It.IsAny<PropertyRequiredQuery>(), It.IsAny<CancellationToken>()))
                .ReturnsAsync(new List<ValidatorNode>());
 
-            _mocker.Setup<IMediator, Task<List<ValidatorNode>>>(x => x.Send(It.IsAny<PropertyTypeQuery>(), It.IsAny<CancellationToken>()))
+            _mocker.Setup<IMediator, Task<List<ValidatorNode>>>(x => x.Send<List<ValidatorNode>>(It.IsAny<PropertyTypeQuery>(), It.IsAny<CancellationToken>()))
                .ReturnsAsync(new List<ValidatorNode>());
 
             var result = await _service.ValidateAsync("test1", "test2");

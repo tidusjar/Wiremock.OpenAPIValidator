@@ -1,15 +1,14 @@
-﻿using MediatR;
-using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi.Models;
 
 namespace Wiremock.OpenAPIValidator.Queries;
 
-public class HttpMethodQuery : BaseQuery, IRequest<ValidatorNode>
+public class HttpMethodQuery : BaseQuery
 {
     public OpenApiPathItem Api { get; set; } = new OpenApiPathItem();
     public string RequestMethod { get; set; } = string.Empty;
 }
 
-public class HttpMethodQueryHandler : IRequestHandler<HttpMethodQuery, ValidatorNode>
+public class HttpMethodQueryHandler
 {
     public Task<ValidatorNode> Handle(HttpMethodQuery request, CancellationToken cancellationToken)
     {

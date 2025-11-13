@@ -1,0 +1,135 @@
+name: Validate WireMock Mappings on PR
+
+on:
+  pull_request:
+    branches: [main, master, develop, update-deps]
+    paths:
+      - 'examples/**'
+      - 'src/Wiremock.OpenAPIValidator/**'
+      - 'action.yml'
+      - '.github/workflows/validate-pr.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate:
+    name: Validate Example Mappings
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build Tool Locally
+        run: |
+          cd src
+          dotnet build --configuration Release
+          dotnet pack --configuration Release --output ./nupkg
+
+      - name: Install Tool from Local Build
+        run: |
+          dotnet tool install --global --add-source ./src/nupkg Wiremock.OpenAPIValidator
+
+      - name: Validate WireMock Mappings with Local Action
+        id: validate
+        uses: ./
+        with:
+          openapi-path: 'examples/openapi/openapi.yaml'
+          wiremock-path: 'examples/wiremock/mappings'
+          fail-on-warnings: false
+          post-comment: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          skip-install: true
+
+      - name: Display Results in Job Summary
+        if: always()
+        run: |
+          echo "## 🎯 WireMock OpenAPI Validation Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "This workflow validates the example WireMock mappings against the OpenAPI spec." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Total Checks | ${{ steps.validate.outputs.total-checks }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ✅ Passed | ${{ steps.validate.outputs.passed-checks }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ⚠️ Warnings | ${{ steps.validate.outputs.warning-checks }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ❌ Failed | ${{ steps.validate.outputs.failed-checks }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔴 Errors | ${{ steps.validate.outputs.error-checks }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.validate.outputs.validation-passed }}" == "true" ]; then
+            echo "✅ **All validations passed!**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Some validations failed. Check the PR comment for details.**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*This is a dogfooding test of the WireMock OpenAPI Validator GitHub Action*" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload JSON Results as Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-results
+          path: validation-results.json
+          retention-days: 30
+
+  test-direct-cli:
+    name: Test CLI Directly
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build and Run CLI Tool
+        run: |
+          cd src
+          dotnet build
+
+          echo "## 🧪 Testing CLI Formats" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Test JSON format
+          cd Wiremock.OpenAPIValidator
+          dotnet run -- -o "../../examples/openapi/openapi.yaml" -w "../../examples/wiremock/mappings" --format json --output-file results.json --quiet
+          echo "✅ JSON format test passed" >> $GITHUB_STEP_SUMMARY
+
+          # Test JUnit format
+          dotnet run -- -o "../../examples/openapi/openapi.yaml" -w "../../examples/wiremock/mappings" --format junit --output-file results.xml --quiet
+          echo "✅ JUnit XML format test passed" >> $GITHUB_STEP_SUMMARY
+
+          # Test GitHub format
+          dotnet run -- -o "../../examples/openapi/openapi.yaml" -w "../../examples/wiremock/mappings" --format github --output-file results-gh.txt --quiet
+          echo "✅ GitHub Actions format test passed" >> $GITHUB_STEP_SUMMARY
+
+          # Test Console format
+          dotnet run -- -o "../../examples/openapi/openapi.yaml" -w "../../examples/wiremock/mappings" --quiet
+          echo "✅ Console format test passed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload All Format Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-format-tests
+          path: |
+            src/Wiremock.OpenAPIValidator/results.json
+            src/Wiremock.OpenAPIValidator/results.xml
+            src/Wiremock.OpenAPIValidator/results-gh.txt
+          retention-days: 7

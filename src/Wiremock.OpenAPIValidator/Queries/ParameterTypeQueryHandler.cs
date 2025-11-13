@@ -1,18 +1,17 @@
-﻿using MediatR;
-using Microsoft.OpenApi.Any;
+﻿using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Wiremock.OpenAPIValidator.Queries;
 
-public class ParameterTypeQuery : BaseQuery, IRequest<ValidatorNode>
+public class ParameterTypeQuery : BaseQuery
 {
     public OpenApiParameter? Param { get; set; }
     public JsonElement MockedParameters { get; set; }
 }
 
-public class ParameterTypeQueryHandler : IRequestHandler<ParameterTypeQuery, ValidatorNode>
+public class ParameterTypeQueryHandler
 {
     public Task<ValidatorNode> Handle(ParameterTypeQuery request, CancellationToken cancellationToken)
     {

@@ -28,10 +28,10 @@ public class UrlPathMatchQueryHandlerTests
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
-            Assert.That(response.Item1.Type, Is.EqualTo(ValidatorType.UrlMatch));
-            Assert.That(response.Item1.Name, Is.EqualTo("/api/v1/status/*"));
-            Assert.That(response.Item1.ValidationResult, Is.EqualTo(ValidationResult.Failed));
-            Assert.That(response.Item1.Description, Is.Not.Null.And.Contains("/api/v1/status/*"));
+            Assert.That(response.ValidationNode.Type, Is.EqualTo(ValidatorType.UrlMatch));
+            Assert.That(response.ValidationNode.Name, Is.EqualTo("/api/v1/status/*"));
+            Assert.That(response.ValidationNode.ValidationResult, Is.EqualTo(ValidationResult.Failed));
+            Assert.That(response.ValidationNode.Description, Is.Not.Null.And.Contains("/api/v1/status/*"));
         });
     }
 
@@ -48,9 +48,9 @@ public class UrlPathMatchQueryHandlerTests
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
-            Assert.That(response.Item1.Type, Is.EqualTo(ValidatorType.UrlMatch));
-            Assert.That(response.Item1.Name, Is.EqualTo(@"/api/v1/status\\?.*"));
-            Assert.That(response.Item1.ValidationResult, Is.EqualTo(ValidationResult.Passed));
+            Assert.That(response.ValidationNode.Type, Is.EqualTo(ValidatorType.UrlMatch));
+            Assert.That(response.ValidationNode.Name, Is.EqualTo(@"/api/v1/status\\?.*"));
+            Assert.That(response.ValidationNode.ValidationResult, Is.EqualTo(ValidationResult.Passed));
         });
     }
 
@@ -64,8 +64,8 @@ public class UrlPathMatchQueryHandlerTests
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
-            Assert.That(response.Item1, Is.InstanceOf<ValidatorNode>());
-            Assert.That(response.Item2, Is.Null);
+            Assert.That(response.ValidationNode, Is.InstanceOf<ValidatorNode>());
+            Assert.That(response.MatchedPath, Is.Null);
         });
     }
 }
