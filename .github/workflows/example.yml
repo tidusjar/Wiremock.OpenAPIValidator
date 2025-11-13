@@ -20,4 +20,4 @@ jobs:
           dotnet-version: 10.0.x
       - name: Run Validator
         run: |
-          dotnet run --project .\src\Wiremock.OpenAPIValidator\Wiremock.OpenAPIValidator.csproj  -o "./examples/openapi/openapi.yaml" -w "./examples/wiremock/mappings"
+          dotnet run --project ./src/Wiremock.OpenAPIValidator/Wiremock.OpenAPIValidator.csproj  -o "./examples/openapi/openapi.yaml" -w "./examples/wiremock/mappings"
