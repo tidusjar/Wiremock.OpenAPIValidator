@@ -1,7 +1,7 @@
 name: 'WireMock OpenAPI Validator'
 description: 'Validates WireMock stub mappings against OpenAPI specifications in your PR pipeline'
 branding:
-  icon: 'shield-check'
+  icon: 'alert-circle'
   color: 'green'
 
 inputs:
