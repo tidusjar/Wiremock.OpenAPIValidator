@@ -1,16 +1,15 @@
-﻿using MediatR;
-using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi.Models;
 using Wiremock.OpenAPIValidator.Models;
 
 namespace Wiremock.OpenAPIValidator.Queries;
 
-public class PropertyTypeQuery : BaseQuery, IRequest<List<ValidatorNode>>
+public class PropertyTypeQuery : BaseQuery
 {
     public OpenApiResponses? Responses { get; set; }
     public WiremockResponseProperties? MockProperties { get; set; }
 }
 
-public class PropertyTypeQueryHandler : IRequestHandler<PropertyTypeQuery, List<ValidatorNode>>
+public class PropertyTypeQueryHandler
 {
     public Task<List<ValidatorNode>> Handle(PropertyTypeQuery request, CancellationToken cancellationToken)
     {

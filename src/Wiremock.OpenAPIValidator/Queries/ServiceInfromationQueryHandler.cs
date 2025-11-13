@@ -1,11 +1,9 @@
-﻿using MediatR;
+﻿namespace Wiremock.OpenAPIValidator.Queries;
 
-namespace Wiremock.OpenAPIValidator.Queries;
-
-public class ServiceInformationQuery : IRequest<string>
+public class ServiceInformationQuery
 {
 }
-internal class ServiceInfromationQueryHandler : IRequestHandler<ServiceInformationQuery, string>
+public class ServiceInfromationQueryHandler
 {
     public Task<string> Handle(ServiceInformationQuery request, CancellationToken cancellationToken)
     {

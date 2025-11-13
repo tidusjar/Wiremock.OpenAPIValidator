@@ -1,14 +1,13 @@
-﻿using MediatR;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace Wiremock.OpenAPIValidator.Commands;
 
-public class WiremockMappingsReaderCommand : IRequest<WiremockMappings?>
+public class WiremockMappingsReaderCommand
 {
     public string WiremockMappingPath { get; set; } = string.Empty;
 }
 
-internal class WiremockMappingsReaderCommandHandler : IRequestHandler<WiremockMappingsReaderCommand, WiremockMappings?>
+public class WiremockMappingsReaderCommandHandler
 {
     public async Task<WiremockMappings?> Handle(WiremockMappingsReaderCommand request, CancellationToken cancellationToken)
     {

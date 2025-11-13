@@ -1,22 +1,31 @@
-﻿using MediatR;
-using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi.Models;
 using System.Text.RegularExpressions;
 
 namespace Wiremock.OpenAPIValidator.Queries;
 
-public class UrlPathMatchQuery : IRequest<(ValidatorNode, OpenApiPathItem?)>
+public class UrlPathMatchQuery
 {
     public OpenApiPaths? ApiPaths { get; set; }
     public string MockUrlPattern { get; set; } = string.Empty;
 }
 
-public class UrlPathMatchQueryHandler : IRequestHandler<UrlPathMatchQuery, (ValidatorNode, OpenApiPathItem?)>
+public class UrlPathMatchResult
 {
-    public Task<(ValidatorNode, OpenApiPathItem?)> Handle(UrlPathMatchQuery request, CancellationToken cancellationToken)
+    public ValidatorNode ValidationNode { get; set; } = new ValidatorNode();
+    public OpenApiPathItem? MatchedPath { get; set; }
+}
+
+public class UrlPathMatchQueryHandler
+{
+    public Task<UrlPathMatchResult> Handle(UrlPathMatchQuery request, CancellationToken cancellationToken)
     {
         if (request.ApiPaths == null)
         {
-            return Task.FromResult((new ValidatorNode(), (OpenApiPathItem?)null));
+            return Task.FromResult(new UrlPathMatchResult
+            {
+                ValidationNode = new ValidatorNode(),
+                MatchedPath = null
+            });
         }
         OpenApiPathItem? matchingPath = null;
 
@@ -32,20 +41,28 @@ public class UrlPathMatchQueryHandler : IRequestHandler<UrlPathMatchQuery, (Vali
 
         if (matchingPath is null)
         {
-            return Task.FromResult((new ValidatorNode
+            return Task.FromResult(new UrlPathMatchResult
             {
-                Name = request.MockUrlPattern,
-                Description = $"Couldn't find matching API Path for Mock {request.MockUrlPattern}",
-                Type = ValidatorType.UrlMatch,
-                ValidationResult = ValidationResult.Failed
-            }, matchingPath));
+                ValidationNode = new ValidatorNode
+                {
+                    Name = request.MockUrlPattern,
+                    Description = $"Couldn't find matching API Path for Mock {request.MockUrlPattern}",
+                    Type = ValidatorType.UrlMatch,
+                    ValidationResult = ValidationResult.Failed
+                },
+                MatchedPath = matchingPath
+            });
         }
 
-        return Task.FromResult((new ValidatorNode
+        return Task.FromResult(new UrlPathMatchResult
         {
-            Name = request.MockUrlPattern,
-            Type = ValidatorType.UrlMatch,
-            ValidationResult = ValidationResult.Passed
-        }, (OpenApiPathItem?)matchingPath));
+            ValidationNode = new ValidatorNode
+            {
+                Name = request.MockUrlPattern,
+                Type = ValidatorType.UrlMatch,
+                ValidationResult = ValidationResult.Passed
+            },
+            MatchedPath = matchingPath
+        });
     }
 }

@@ -1,6 +1,6 @@
-﻿using MediatR;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.OpenApi.Models;
 using Wiremock.OpenAPIValidator.Commands;
 using Wiremock.OpenAPIValidator.Queries;
 
@@ -19,11 +19,11 @@ public class ValidationService
     {
         var validation = new ValidatorResults();
 
-        var openApiInfo = await _mediator.Send(new OpenApiDocumentReaderCommand
+        var openApiInfo = await _mediator.Send<OpenApiDocument>(new OpenApiDocumentReaderCommand
         {
             OpenApiDocLocation = openApiUrl
         });
-        var wireMockFiles = await _mediator.Send(new WireMockMappingsQuery
+        var wireMockFiles = await _mediator.Send<string[]>(new WireMockMappingsQuery
         {
             MappingsPath = wireMockMappings
         });
@@ -31,7 +31,7 @@ public class ValidationService
 
         foreach (var mock in wireMockFiles)
         {
-            var mappings = await _mediator.Send(new WiremockMappingsReaderCommand
+            var mappings = await _mediator.Send<WiremockMappings?>(new WiremockMappingsReaderCommand
             {
                 WiremockMappingPath = mock
             });
@@ -42,13 +42,13 @@ public class ValidationService
             }
 
             // Path Match Check
-            var results = await _mediator.Send(new UrlPathMatchQuery
+            var results = await _mediator.Send<UrlPathMatchResult>(new UrlPathMatchQuery
             {
                 ApiPaths = paths,
                 MockUrlPattern = mappings.Request.UrlPattern
             });
-            validation.Results.Add(results.Item1);
-            var matchedPath = results.Item2;
+            validation.Results.Add(results.ValidationNode);
+            var matchedPath = results.MatchedPath;
             if (matchedPath == null)
             {
                 continue;
@@ -57,7 +57,7 @@ public class ValidationService
             var operation = matchedPath.Operations.First().Value;
 
             // Check HTTP Method
-            validation.Results.Add(await _mediator.Send(new HttpMethodQuery
+            validation.Results.Add(await _mediator.Send<ValidatorNode>(new HttpMethodQuery
             {
                 Api = matchedPath,
                 RequestMethod = mappings.Request.Method,
@@ -68,7 +68,7 @@ public class ValidationService
             foreach (var param in operation.Parameters)
             {
                 // Check that it's present if required
-                validation.Results.Add(await _mediator.Send(new ParameterRequiredQuery
+                validation.Results.Add(await _mediator.Send<ValidatorNode>(new ParameterRequiredQuery
                 {
                     Name = $"{operation.OperationId} - {param.Name}",
                     MockedParameters = (JsonElement)mappings.Request.QueryParameters,
@@ -76,7 +76,7 @@ public class ValidationService
                 }));
 
                 // Ensure Param Type is correct
-                validation.Results.Add(await _mediator.Send(new ParameterTypeQuery
+                validation.Results.Add(await _mediator.Send<ValidatorNode>(new ParameterTypeQuery
                 {
                     Name = $"{operation.OperationId} - {param.Name}",
                     MockedParameters = (JsonElement)mappings.Request.QueryParameters,
@@ -84,14 +84,14 @@ public class ValidationService
                 }));
             }
 
-            var mockedResponse = await _mediator.Send(new WiremockResponseReaderCommand
+            var mockedResponse = await _mediator.Send<Models.WiremockResponseProperties>(new WiremockResponseReaderCommand
             {
                 MockResponseFileName = mappings.Response.FileName,
                 WiremockMappingPath = wireMockMappings
             });
 
             // Response Property Check
-            validation.Results.AddRange(await _mediator.Send(new PropertyRequiredQuery
+            validation.Results.AddRange(await _mediator.Send<List<ValidatorNode>>(new PropertyRequiredQuery
             {
                 MockProperties = mockedResponse,
                 Name = operation.OperationId,
@@ -99,7 +99,7 @@ public class ValidationService
             }));
 
             // Response Property Type
-            validation.Results.AddRange(await _mediator.Send(new PropertyTypeQuery
+            validation.Results.AddRange(await _mediator.Send<List<ValidatorNode>>(new PropertyTypeQuery
             {
                 MockProperties = mockedResponse,
                 Name = operation.OperationId,

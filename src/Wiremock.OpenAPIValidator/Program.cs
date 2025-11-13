@@ -1,7 +1,8 @@
 ﻿using CommandLine;
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
+using Wiremock.OpenAPIValidator.Commands;
+using Wiremock.OpenAPIValidator.Queries;
 
 namespace Wiremock.OpenAPIValidator
 {
@@ -49,8 +50,26 @@ namespace Wiremock.OpenAPIValidator
                 .Color(Color.Aquamarine1));
 
             AnsiConsole.Write(new Rule());
-            IServiceCollection services = new ServiceCollection();
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<ValidationService>());
+
+            var services = new ServiceCollection();
+
+            // Register mediator
+            services.AddSingleton<IMediator, SimpleMediator>();
+
+            // Register all handlers
+            services.AddTransient<OpenApiDocumentReaderHandler>();
+            services.AddTransient<WiremockMappingsReaderCommandHandler>();
+            services.AddTransient<WiremockResponseReaderCommandHandler>();
+            services.AddTransient<HttpMethodQueryHandler>();
+            services.AddTransient<ParameterTypeQueryHandler>();
+            services.AddTransient<ParameterRequiredQueryHandler>();
+            services.AddTransient<PropertyTypeQueryHandler>();
+            services.AddTransient<PropertyRequiredQueryHandler>();
+            services.AddTransient<WireMockMappingsQueryHandler>();
+            services.AddTransient<ServiceInfromationQueryHandler>();
+            services.AddTransient<UrlPathMatchQueryHandler>();
+
+            // Register validation service
             services.AddSingleton<ValidationService>();
 
             var provider = services.BuildServiceProvider();
@@ -103,7 +122,7 @@ namespace Wiremock.OpenAPIValidator
             if (validationResult.Results.Any(x => x.ValidationResult == ValidationResult.Failed || x.ValidationResult == ValidationResult.Error))
             {
                 return 1;
-            } 
+            }
             else
             {
                 return 0;
