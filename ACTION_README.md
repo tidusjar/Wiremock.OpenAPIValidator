@@ -80,6 +80,7 @@ jobs:
 | `fail-on-warnings` | Fail the build if warnings are found | No | `false` |
 | `post-comment` | Post validation results as a PR comment | No | `true` |
 | `github-token` | GitHub token for posting PR comments | No | `${{ github.token }}` |
+| `skip-install` | Skip tool installation (for local development/testing) | No | `false` |
 
 ## Outputs
 
@@ -177,6 +178,29 @@ Validate against multiple specifications:
   with:
     openapi-path: 'specs/orders-api.yml'
     wiremock-path: 'mocks/orders'
+```
+
+### Local Development / Testing
+
+When testing the action locally or using a custom-built version:
+
+```yaml
+- name: Build Tool Locally
+  run: |
+    cd src
+    dotnet build --configuration Release
+    dotnet pack --configuration Release --output ./nupkg
+
+- name: Install Local Tool
+  run: |
+    dotnet tool install --global --add-source ./src/nupkg Wiremock.OpenAPIValidator
+
+- name: Validate with Local Action
+  uses: ./  # or your-org/wiremock-openapi-validator@branch-name
+  with:
+    openapi-path: 'openapi.yml'
+    wiremock-path: 'mappings'
+    skip-install: true  # Don't overwrite our local build!
 ```
 
 ### Matrix Strategy

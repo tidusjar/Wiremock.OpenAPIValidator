@@ -23,6 +23,10 @@ inputs:
     description: 'GitHub token for posting PR comments (default: GITHUB_TOKEN)'
     required: false
     default: ${{ github.token }}
+  skip-install:
+    description: 'Skip tool installation (use when tool is already installed, e.g., for local development)'
+    required: false
+    default: 'false'
 
 outputs:
   validation-passed:
@@ -53,6 +57,7 @@ runs:
         dotnet-version: '10.0.x'
 
     - name: Install WireMock OpenAPI Validator
+      if: ${{ inputs.skip-install != 'true' }}
       shell: bash
       run: dotnet tool install --global Wiremock.OpenAPIValidator || dotnet tool update --global Wiremock.OpenAPIValidator
 
