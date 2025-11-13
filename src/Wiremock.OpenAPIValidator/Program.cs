@@ -50,7 +50,7 @@ namespace Wiremock.OpenAPIValidator
 
             AnsiConsole.Write(new Rule());
             IServiceCollection services = new ServiceCollection();
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<ValidationService>());
             services.AddSingleton<ValidationService>();
 
             var provider = services.BuildServiceProvider();
