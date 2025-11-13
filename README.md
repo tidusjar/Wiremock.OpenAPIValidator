@@ -30,11 +30,11 @@ ___
 
 ```
 steps:
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - name: Setup .NET
-    uses: actions/setup-dotnet@v2
+    uses: actions/setup-dotnet@v4
     with:
-    dotnet-version: 6.0.x
+    dotnet-version: 10.0.x
 - name: Install Wiremock OpenAPI Validator Tool
     run: dotnet tool install --global Wiremock.OpenAPIValidator
 - name: Run Validator
