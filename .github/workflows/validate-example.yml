@@ -4,20 +4,11 @@
 name: Validate WireMock Mappings
 
 on:
-  pull_request:
-    branches: [main, develop]
-    paths:
-      # Only run when OpenAPI specs or WireMock mappings change
-      - 'examples/OpenApiSpecs/**'
-      - 'examples/WiremockMappings/**'
-      - '.github/workflows/validate-example.yml'
-  push:
-    branches: [main]
   workflow_dispatch: # Allow manual trigger
 
 permissions:
   contents: read
-  pull-requests: write  # Required for PR comments
+  pull-requests: write # Required for PR comments
 
 jobs:
   validate:
@@ -30,10 +21,10 @@ jobs:
 
       - name: Validate WireMock Mappings
         id: validate
-        uses: ./  # Use local action (change to your-org/wiremock-openapi-validator@v1 in production)
+        uses: ./ # Use local action (change to your-org/wiremock-openapi-validator@v1 in production)
         with:
-          openapi-path: 'examples/OpenApiSpecs/PetStore.yml'
-          wiremock-path: 'examples/WiremockMappings'
+          openapi-path: "examples/OpenApiSpecs/PetStore.yml"
+          wiremock-path: "examples/WiremockMappings"
           fail-on-warnings: false
           post-comment: true
 
@@ -62,30 +53,3 @@ jobs:
           name: validation-results
           path: validation-results.json
           retention-days: 30
-
-  # Example: Multiple specs validation
-  validate-multiple:
-    name: Validate Multiple APIs
-    runs-on: ubuntu-latest
-    if: false  # Disabled by default - enable as needed
-
-    strategy:
-      fail-fast: false
-      matrix:
-        api:
-          - name: 'PetStore'
-            spec: 'examples/OpenApiSpecs/PetStore.yml'
-            mappings: 'examples/WiremockMappings'
-          # Add more APIs here:
-          # - name: 'UserService'
-          #   spec: 'specs/user-service.yml'
-          #   mappings: 'mocks/user-service'
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Validate ${{ matrix.api.name }}
-        uses: ./
-        with:
-          openapi-path: ${{ matrix.api.spec }}
-          wiremock-path: ${{ matrix.api.mappings }}
