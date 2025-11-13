@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Validate WireMock Mappings
-        uses: your-org/wiremock-openapi-validator@v1
+        uses: tidusjar/wiremock-openapi-validator@v1
         with:
           openapi-path: 'openapi/api-spec.yml'
           wiremock-path: 'wiremock/mappings'
@@ -43,7 +43,7 @@ jobs:
 
 ```yaml
 - name: Validate WireMock Mappings
-  uses: your-org/wiremock-openapi-validator@v1
+  uses: tidusjar/wiremock-openapi-validator@v1
   with:
     openapi-path: 'specs/openapi.yml'
     wiremock-path: 'mocks/mappings'
@@ -57,7 +57,7 @@ jobs:
 ```yaml
 - name: Validate WireMock Mappings
   id: validate
-  uses: your-org/wiremock-openapi-validator@v1
+  uses: tidusjar/wiremock-openapi-validator@v1
   with:
     openapi-path: 'openapi.yml'
     wiremock-path: 'mappings'
@@ -143,7 +143,7 @@ The action posts a detailed comment to your PR:
 Use `fail-on-warnings: true` to enforce zero warnings in your codebase:
 
 ```yaml
-- uses: your-org/wiremock-openapi-validator@v1
+- uses: tidusjar/wiremock-openapi-validator@v1
   with:
     openapi-path: 'api.yml'
     wiremock-path: 'mappings'
@@ -155,7 +155,7 @@ Use `fail-on-warnings: true` to enforce zero warnings in your codebase:
 For CI environments outside pull requests or to disable comments:
 
 ```yaml
-- uses: your-org/wiremock-openapi-validator@v1
+- uses: tidusjar/wiremock-openapi-validator@v1
   with:
     openapi-path: 'api.yml'
     wiremock-path: 'mappings'
@@ -168,13 +168,13 @@ Validate against multiple specifications:
 
 ```yaml
 - name: Validate User API Mocks
-  uses: your-org/wiremock-openapi-validator@v1
+  uses: tidusjar/wiremock-openapi-validator@v1
   with:
     openapi-path: 'specs/users-api.yml'
     wiremock-path: 'mocks/users'
 
 - name: Validate Orders API Mocks
-  uses: your-org/wiremock-openapi-validator@v1
+  uses: tidusjar/wiremock-openapi-validator@v1
   with:
     openapi-path: 'specs/orders-api.yml'
     wiremock-path: 'mocks/orders'
@@ -196,7 +196,7 @@ When testing the action locally or using a custom-built version:
     dotnet tool install --global --add-source ./src/nupkg Wiremock.OpenAPIValidator
 
 - name: Validate with Local Action
-  uses: ./  # or your-org/wiremock-openapi-validator@branch-name
+  uses: ./  # or tidusjar/wiremock-openapi-validator@branch-name
   with:
     openapi-path: 'openapi.yml'
     wiremock-path: 'mappings'
@@ -216,7 +216,7 @@ steps:
   - uses: actions/checkout@v4
 
   - name: Validate ${{ matrix.environment }} Mocks
-    uses: your-org/wiremock-openapi-validator@v1
+    uses: tidusjar/wiremock-openapi-validator@v1
     with:
       openapi-path: 'specs/${{ matrix.environment }}/api.yml'
       wiremock-path: 'mocks/${{ matrix.environment }}'
