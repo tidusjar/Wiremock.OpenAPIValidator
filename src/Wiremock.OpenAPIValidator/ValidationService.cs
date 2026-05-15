@@ -36,16 +36,17 @@ public class ValidationService
                 WiremockMappingPath = mock
             });
 
-            if (mappings?.Request == null || mappings?.Response == null)
+            if (mappings?.Mappings[0].Request == null || mappings?.Mappings[0].Response == null)
             {
                 continue;
             }
-
+            var req = mappings?.Mappings[0].Request!;
+            var resp = mappings?.Mappings[0].Response!;
             // Path Match Check
             var results = await _mediator.Send<UrlPathMatchResult>(new UrlPathMatchQuery
             {
                 ApiPaths = paths,
-                MockUrlPattern = mappings.Request.UrlPattern
+                MockUrlPattern = req.UrlPattern!
             });
             validation.Results.Add(results.ValidationNode);
             var matchedPath = results.MatchedPath;
@@ -60,8 +61,8 @@ public class ValidationService
             validation.Results.Add(await _mediator.Send<ValidatorNode>(new HttpMethodQuery
             {
                 Api = matchedPath,
-                RequestMethod = mappings.Request.Method,
-                Name = $"{operation.OperationId} - {mappings.Request.Method}",
+                RequestMethod = req.Method,
+                Name = $"{operation.OperationId} - {req.Method}",
             }));
 
             // Check each query parameter
@@ -71,7 +72,7 @@ public class ValidationService
                 validation.Results.Add(await _mediator.Send<ValidatorNode>(new ParameterRequiredQuery
                 {
                     Name = $"{operation.OperationId} - {param.Name}",
-                    MockedParameters = (JsonElement)mappings.Request.QueryParameters,
+                    MockedParameters = (JsonElement)req.QueryParameters,
                     Param = param
                 }));
 
@@ -79,14 +80,14 @@ public class ValidationService
                 validation.Results.Add(await _mediator.Send<ValidatorNode>(new ParameterTypeQuery
                 {
                     Name = $"{operation.OperationId} - {param.Name}",
-                    MockedParameters = (JsonElement)mappings.Request.QueryParameters,
+                    MockedParameters = (JsonElement)req.QueryParameters,
                     Param = param
                 }));
             }
 
             var mockedResponse = await _mediator.Send<Models.WiremockResponseProperties>(new WiremockResponseReaderCommand
             {
-                MockResponseFileName = mappings.Response.FileName,
+                MockResponseFileName = resp.FileName,
                 WiremockMappingPath = wireMockMappings
             });
 
