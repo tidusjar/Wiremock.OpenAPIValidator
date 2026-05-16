@@ -18,22 +18,19 @@ public class WiremockMappingsReaderCommandHandler
         }
 
         using var stream = File.OpenRead(request.WiremockMappingPath);
-        var json = (await JsonNode.ParseAsync(stream))!.AsObject();
+        var json = (await JsonNode.ParseAsync(stream, cancellationToken: cancellationToken))!.AsObject();
+
+        if (json["mappings"] is JsonArray)
+        {
+            return JsonSerializer.Deserialize<WiremockMappings>(json);
+        }
 
         var mappings = new WiremockMappings();
-
-        if (json.FirstOrDefault().Value is JsonArray arr && (arr.Count > 0 && arr[0]!["request"] != null))
+        if (json["request"] is JsonObject)
         {
-            mappings = JsonSerializer.Deserialize<WiremockMappings>(json);
-            return mappings;
+            var mapping = JsonSerializer.Deserialize<WiremockMapping>(json);
+            mappings.Mappings.Add(mapping!);
         }
-        if (json.FirstOrDefault().Value is JsonObject)
-        {
-            var mapping = JsonSerializer.Deserialize<WiremockMapping?>(json);
-            mappings?.Mappings.Add(mapping!);
-            return mappings;
-        }
-
         return mappings;
     }
 }
