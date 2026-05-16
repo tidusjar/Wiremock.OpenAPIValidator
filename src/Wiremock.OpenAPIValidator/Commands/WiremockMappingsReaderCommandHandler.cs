@@ -16,24 +16,24 @@ public class WiremockMappingsReaderCommandHandler
         {
             throw new FileNotFoundException($"The Wiremock Mappings path '{request.WiremockMappingPath}' does not exist");
         }
+
         using var stream = File.OpenRead(request.WiremockMappingPath);
         var json = (await JsonNode.ParseAsync(stream))!.AsObject();
 
         var mappings = new WiremockMappings();
 
-        if (json.FirstOrDefault().Value is not null && json.FirstOrDefault().Value is JsonArray arr && arr[0]!["request"] != null)
+        if (json.FirstOrDefault().Value is JsonArray arr && (arr.Count == 0 || arr[0]!["request"] != null))
         {
             mappings = JsonSerializer.Deserialize<WiremockMappings>(json);
             return mappings;
         }
-        if (json.FirstOrDefault().Value is JsonObject @object)
+        if (json.FirstOrDefault().Value is JsonObject)
         {
-            {
-                var mapping = JsonSerializer.Deserialize<WiremockMapping?>(@object);
-                mappings?.Mappings.Add(mapping!);
-            }
+            var mapping = JsonSerializer.Deserialize<WiremockMapping?>(json);
+            mappings?.Mappings.Add(mapping!);
             return mappings;
         }
-        return mappings;
+
+        return null;
     }
 }
