@@ -22,7 +22,7 @@ public class WiremockMappingsReaderCommandHandler
 
         var mappings = new WiremockMappings();
 
-        if (json.FirstOrDefault().Value is JsonArray arr && (arr.Count == 0 || arr[0]!["request"] != null))
+        if (json.FirstOrDefault().Value is JsonArray arr && (arr.Count > 0 && arr[0]!["request"] != null))
         {
             mappings = JsonSerializer.Deserialize<WiremockMappings>(json);
             return mappings;
@@ -34,6 +34,6 @@ public class WiremockMappingsReaderCommandHandler
             return mappings;
         }
 
-        return null;
+        return mappings;
     }
 }

@@ -134,5 +134,19 @@ namespace Wiremock.OpenAPIValidator.Tests.Commands
             Assert.That(result, Is.Not.Null);
             Assert.That(result!.Mappings, Is.Empty);
         }
+
+        [Test]
+        public async Task Handle_UnrecognizedJsonShape_ReturnsEmptyMappings()
+        {
+            var json = """{ "unexpected": "value" }""";
+            await File.WriteAllTextAsync(_tempFilePath, json);
+
+            var result = await _handler.Handle(
+                new WiremockMappingsReaderCommand { WiremockMappingPath = _tempFilePath },
+                CancellationToken.None);
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.Mappings, Is.Empty);
+        }
     }
 }

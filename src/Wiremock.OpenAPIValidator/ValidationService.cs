@@ -36,7 +36,7 @@ public class ValidationService
                 WiremockMappingPath = mock
             });
 
-            if (parsedFile == null)
+            if (parsedFile == null || parsedFile.Mappings.Count is 0)
             {
                 continue;
             }
