@@ -28,6 +28,8 @@ namespace Wiremock.OpenAPIValidator.Tests
         [Test]
         public async Task SuccessfulValidation()
         {
+            
+
             _mocker.Setup<IMediator, Task<OpenApiDocument>>(x => x.Send<OpenApiDocument>(It.IsAny<OpenApiDocumentReaderCommand>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new OpenApiDocument
                 {
@@ -42,19 +44,50 @@ namespace Wiremock.OpenAPIValidator.Tests
 
             var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
             var doc = JsonDocument.Parse(mockedParam);
-            _mocker.Setup<IMediator, Task<WiremockMapping?>>(x => x.Send<WiremockMapping?>(It.IsAny<WiremockMappingsReaderCommand>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new WiremockMapping
-                {
-                    Request = new WiremockRequest
+            var parsedMappings = new WiremockMappings
+            {
+                Mappings = new List<WiremockMapping>()
                     {
-                        UrlPattern = "abc",
-                        QueryParameters = doc.RootElement
-                    },
-                    Response = new WiremockResponse
-                    {
-                        FileName = "Test"
+                        new WiremockMapping()
+                        {
+                            Request = new WiremockRequest
+                            {
+                                UrlPattern = "abc",
+                                QueryParameters = doc.RootElement
+                            },
+                            Response = new WiremockResponse
+                            {
+                                FileName = "Test1"
+                            }
+                        },
+                        new WiremockMapping()
+                        {
+                            Request = new WiremockRequest
+                            {
+                                UrlPattern = "def",
+                                QueryParameters = doc.RootElement
+                            },
+                            Response = new WiremockResponse
+                            {
+                                FileName = "Test2"
+                            }
+                        },
+                        new WiremockMapping()
+                        {
+                            Request = new WiremockRequest
+                            {
+                                UrlPattern = "ghi",
+                                QueryParameters = doc.RootElement
+                            },
+                            Response = new WiremockResponse
+                            {
+                                FileName = "Test3"
+                            }
+                        }
                     }
-                });
+            };
+            _mocker.Setup<IMediator, Task<WiremockMappings?>>(x => x.Send<WiremockMappings?>(It.IsAny<WiremockMappingsReaderCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(parsedMappings);
 
             _mocker.Setup<IMediator, Task<UrlPathMatchResult>>(x => x.Send<UrlPathMatchResult>(It.IsAny<UrlPathMatchQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new UrlPathMatchResult
@@ -81,6 +114,20 @@ namespace Wiremock.OpenAPIValidator.Tests
             var result = await _service.ValidateAsync("test1", "test2");
 
             Assert.That(result, Is.Not.Null);
+
+            var mediatorMock = _mocker.GetMock<IMediator>();
+
+            mediatorMock.Verify(x => x.Send<OpenApiDocument>(It.IsAny<OpenApiDocumentReaderCommand>(), It.IsAny<CancellationToken>()), Times.Once);
+            mediatorMock.Verify(x => x.Send<string[]>(It.IsAny<WireMockMappingsQuery>(), It.IsAny<CancellationToken>()), Times.Once);
+            mediatorMock.Verify(x => x.Send<WiremockMappings?>(It.IsAny<WiremockMappingsReaderCommand>(), It.IsAny<CancellationToken>()), Times.Once);
+
+            mediatorMock.Verify(x => x.Send<UrlPathMatchResult>(It.IsAny<UrlPathMatchQuery>(), It.IsAny<CancellationToken>()), Times.Exactly(parsedMappings.Mappings.Count));
+            mediatorMock.Verify(x => x.Send<ValidatorNode>(It.IsAny<HttpMethodQuery>(), It.IsAny<CancellationToken>()), Times.Exactly(parsedMappings.Mappings.Count));
+            mediatorMock.Verify(x => x.Send<ValidatorNode>(It.IsAny<ParameterRequiredQuery>(), It.IsAny<CancellationToken>()), Times.Exactly(parsedMappings.Mappings.Count));
+            mediatorMock.Verify(x => x.Send<ValidatorNode>(It.IsAny<ParameterTypeQuery>(), It.IsAny<CancellationToken>()), Times.Exactly(parsedMappings.Mappings.Count));
+            mediatorMock.Verify(x => x.Send<WiremockResponseProperties>(It.IsAny<WiremockResponseReaderCommand>(), It.IsAny<CancellationToken>()), Times.Exactly(parsedMappings.Mappings.Count));
+            mediatorMock.Verify(x => x.Send<List<ValidatorNode>>(It.IsAny<PropertyRequiredQuery>(), It.IsAny<CancellationToken>()), Times.Exactly(parsedMappings.Mappings.Count));
+            mediatorMock.Verify(x => x.Send<List<ValidatorNode>>(It.IsAny<PropertyTypeQuery>(), It.IsAny<CancellationToken>()), Times.Exactly(parsedMappings.Mappings.Count));
         }
     }
 }
