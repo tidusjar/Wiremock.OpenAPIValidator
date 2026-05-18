@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Wiremock.OpenAPIValidator.Commands;
 
@@ -15,10 +16,21 @@ public class WiremockMappingsReaderCommandHandler
         {
             throw new FileNotFoundException($"The Wiremock Mappings path '{request.WiremockMappingPath}' does not exist");
         }
+
         using var stream = File.OpenRead(request.WiremockMappingPath);
-        var mappings = await JsonSerializer.DeserializeAsync<WiremockMappings>(stream, cancellationToken: cancellationToken);
+        var json = (await JsonNode.ParseAsync(stream, cancellationToken: cancellationToken))!.AsObject();
 
+        if (json["mappings"] is JsonArray)
+        {
+            return JsonSerializer.Deserialize<WiremockMappings>(json);
+        }
 
+        var mappings = new WiremockMappings();
+        if (json["request"] is JsonObject)
+        {
+            var mapping = JsonSerializer.Deserialize<WiremockMapping>(json);
+            mappings.Mappings.Add(mapping!);
+        }
         return mappings;
     }
 }
