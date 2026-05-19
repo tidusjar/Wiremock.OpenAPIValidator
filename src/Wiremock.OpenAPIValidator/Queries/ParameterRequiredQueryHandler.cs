@@ -24,7 +24,7 @@ public class ParameterRequiredQueryHandler
 
         var existingProp = json[request.Param.Name];
 
-        if (existingProp is null || existingProp.GetValue<string>() is null || request.Param.Required)
+        if ((existingProp is null || existingProp.GetValue<string>() is null) && request.Param.Required)
         {
             return Task.FromResult(new ValidatorNode
             {
@@ -34,7 +34,7 @@ public class ParameterRequiredQueryHandler
                 ValidationResult = ValidationResult.Failed
             });
         }
-        else if (!existingProp && !request.Param.Required)
+        else if ((existingProp is null || existingProp.GetValue<string>() is null) && !request.Param.Required)
         {
             return Task.FromResult(new ValidatorNode
             {
