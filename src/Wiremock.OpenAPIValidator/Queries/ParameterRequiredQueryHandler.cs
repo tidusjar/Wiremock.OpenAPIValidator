@@ -1,12 +1,14 @@
 ﻿using Microsoft.OpenApi.Models;
+using System.IO;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Wiremock.OpenAPIValidator.Queries;
 
 public class ParameterRequiredQuery : BaseQuery
 {
     public OpenApiParameter? Param { get; set; }
-    public JsonElement MockedParameters { get; set; }
+    public string MockedParameters { get; set; }
 }
 
 public class ParameterRequiredQueryHandler
@@ -17,9 +19,12 @@ public class ParameterRequiredQueryHandler
         {
             return Task.FromResult(new ValidatorNode());
         }
-        var existingProp = request.MockedParameters.TryGetProperty(request.Param.Name, out var _);
 
-        if (!existingProp && request.Param.Required)
+        var json = JsonNode.Parse(request.MockedParameters)!.AsObject();
+
+        var existingProp = json[request.Param.Name];
+
+        if (existingProp is null || existingProp.GetValue<string>() is null || request.Param.Required)
         {
             return Task.FromResult(new ValidatorNode
             {

@@ -18,6 +18,6 @@ namespace Wiremock.OpenAPIValidator
         }
 
         [JsonPropertyName("queryParameters")]
-        public dynamic? QueryParameters { get; set; }
+        public string? QueryParameters { get; set; }
     }
 }

@@ -79,7 +79,7 @@ public class ValidationService
                     validation.Results.Add(await _mediator.Send<ValidatorNode>(new ParameterRequiredQuery
                     {
                         Name = $"{operation.OperationId} - {param.Name}",
-                        MockedParameters = (JsonElement)mapping.Request.QueryParameters,
+                        MockedParameters = mapping.Request.QueryParameters,
                         Param = param
                     }));
 
