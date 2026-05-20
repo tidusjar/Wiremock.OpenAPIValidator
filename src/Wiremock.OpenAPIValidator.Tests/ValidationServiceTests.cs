@@ -53,7 +53,7 @@ namespace Wiremock.OpenAPIValidator.Tests
                             Request = new WiremockRequest
                             {
                                 UrlPattern = "abc",
-                                QueryParameters = doc.RootElement
+                                QueryParameters = mockedParam
                             },
                             Response = new WiremockResponse
                             {
@@ -65,7 +65,7 @@ namespace Wiremock.OpenAPIValidator.Tests
                             Request = new WiremockRequest
                             {
                                 UrlPattern = "def",
-                                QueryParameters = doc.RootElement
+                                QueryParameters = mockedParam
                             },
                             Response = new WiremockResponse
                             {
@@ -77,7 +77,7 @@ namespace Wiremock.OpenAPIValidator.Tests
                             Request = new WiremockRequest
                             {
                                 UrlPattern = "ghi",
-                                QueryParameters = doc.RootElement
+                                QueryParameters = mockedParam
                             },
                             Response = new WiremockResponse
                             {

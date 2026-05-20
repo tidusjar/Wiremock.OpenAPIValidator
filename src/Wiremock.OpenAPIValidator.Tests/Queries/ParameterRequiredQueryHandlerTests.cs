@@ -19,7 +19,6 @@ public class ParameterRequiredQueryHandlerTests
     public async Task Handle_RequiredMissingParam()
     {
         var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterRequiredQuery
         {
@@ -29,7 +28,7 @@ public class ParameterRequiredQueryHandlerTests
                 Name = "Param1",
                 Required = true
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -44,7 +43,6 @@ public class ParameterRequiredQueryHandlerTests
     public async Task Handle_OptionalMissingParam()
     {
         var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterRequiredQuery
         {
@@ -54,7 +52,7 @@ public class ParameterRequiredQueryHandlerTests
                 Name = "Param1",
                 Required = false
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -69,13 +67,12 @@ public class ParameterRequiredQueryHandlerTests
     public async Task Handle_NullParam()
     {
         var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterRequiredQuery
         {
             Name = "UnitTest",
             Param = null,
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.That(response, Is.InstanceOf<ValidatorNode?>());
     }
@@ -84,7 +81,6 @@ public class ParameterRequiredQueryHandlerTests
     public async Task Handle_CorrectParam([Values] bool required)
     {
         var mockedParam = "{ \"Param1\": { \"equalTo\": \"All\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterRequiredQuery
         {
@@ -94,7 +90,7 @@ public class ParameterRequiredQueryHandlerTests
                 Name = "Param1",
                 Required = required
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
