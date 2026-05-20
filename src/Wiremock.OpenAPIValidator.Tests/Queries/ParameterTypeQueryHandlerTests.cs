@@ -30,7 +30,7 @@ public class ParameterTypeQueryHandlerTests
                 Name = "Param1",
                 Required = true
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -55,7 +55,7 @@ public class ParameterTypeQueryHandlerTests
                 Name = "Param1",
                 Required = false
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -84,7 +84,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -113,7 +113,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -142,7 +142,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -171,7 +171,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -200,7 +200,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -232,7 +232,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -263,7 +263,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -284,7 +284,7 @@ public class ParameterTypeQueryHandlerTests
         {
             Name = "UnitTest",
             Param = null,
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.That(response, Is.InstanceOf<ValidatorNode?>());
     }
