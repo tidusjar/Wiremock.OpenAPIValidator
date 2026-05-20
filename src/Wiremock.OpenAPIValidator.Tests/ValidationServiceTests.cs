@@ -28,8 +28,6 @@ namespace Wiremock.OpenAPIValidator.Tests
         [Test]
         public async Task SuccessfulValidation()
         {
-            
-
             _mocker.Setup<IMediator, Task<OpenApiDocument>>(x => x.Send<OpenApiDocument>(It.IsAny<OpenApiDocumentReaderCommand>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new OpenApiDocument
                 {

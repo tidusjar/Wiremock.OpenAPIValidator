@@ -84,12 +84,12 @@ public class ValidationService
                     }));
 
                     // Ensure Param Type is correct
-                    //validation.Results.Add(await _mediator.Send<ValidatorNode>(new ParameterTypeQuery
-                    //{
-                    //    Name = $"{operation.OperationId} - {param.Name}",
-                    //    MockedParameters = mapping.Request.QueryParameters,
-                    //    Param = param
-                    //}));
+                    validation.Results.Add(await _mediator.Send<ValidatorNode>(new ParameterTypeQuery
+                    {
+                        Name = $"{operation.OperationId} - {param.Name}",
+                        MockedParameters = mapping.Request.QueryParameters,
+                        Param = param
+                    }));
                 }
 
                 var mockedResponse = await _mediator.Send<Models.WiremockResponseProperties>(new WiremockResponseReaderCommand
