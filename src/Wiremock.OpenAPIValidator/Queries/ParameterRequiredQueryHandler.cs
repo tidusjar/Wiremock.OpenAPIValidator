@@ -18,7 +18,7 @@ public class ParameterRequiredQueryHandler
             return Task.FromResult(new ValidatorNode());
         }
 
-        var exists = ParameterExistsInMock(request.Param.Name, request.MockedParameters);
+        var exists = MockParameterExists(request.Param.Name, request.MockedParameters);
 
         if (!exists && request.Param.Required)
         {
@@ -49,7 +49,7 @@ public class ParameterRequiredQueryHandler
         });
     }
 
-    private static bool ParameterExistsInMock(string paramName, string? mockedParameter)
+    private static bool MockParameterExists(string paramName, string? mockedParameter)
     {
         if (mockedParameter is null)
         {
