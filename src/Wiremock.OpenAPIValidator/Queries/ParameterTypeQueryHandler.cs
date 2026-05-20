@@ -23,6 +23,7 @@ public class ParameterTypeQueryHandler
         }
 
         var propExists = TryGetMockedParam(request.MockedParameters, request.Param.Name, out var mockedProperty);
+
         if (!propExists && request.Param.Required)
         {
             return Task.FromResult(new ValidatorNode

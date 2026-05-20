@@ -1,6 +1,5 @@
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
-using System.Text.Json;
 using Wiremock.OpenAPIValidator.Queries;
 
 namespace Wiremock.OpenAPIValidator.Tests.Queries;
@@ -20,7 +19,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_RequiredMissingParam()
     {
         var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -45,7 +43,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_OptionalMissingParam()
     {
         var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -70,7 +67,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_RequiredParamCorrectTypeEnum()
     {
         var mockedParam = "{ \"Param1\": { \"equalTo\": \"All\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -99,7 +95,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_RequiredParamIncorrectTypeEnum()
     {
         var mockedParam = "{ \"Param1\": { \"equalTo\": \"AAAAA\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -128,7 +123,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_RequiredParamEqualsToCorrectTypeDateTime()
     {
         var mockedParam = "{ \"Param1\": { \"equalTo\": \"2022-03-18T00:00:00.0000000\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -157,7 +151,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_RequiredParamMatchesCorrectTypeUuid()
     {
         var mockedParam = "{ \"Param1\": { \"matches\": \"^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -186,7 +179,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_RequiredParamMatchesIncorrectTypeUuid()
     {
         var mockedParam = "{ \"Param1\": { \"matches\": \"^[{]?-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -218,7 +210,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_RequiredParamMatchesNotSupportedType(string format)
     {
         var mockedParam = "{ \"Param1\": { \"matches\": \"^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -249,7 +240,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_RequiredParamEqualsToIncorrectType(string format)
     {
         var mockedParam = "{ \"Param1\": { \"equalTo\": \"2022-03-18T00:00:00.0000000\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -322,7 +312,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_NullParam()
     {
         var mockedParam = "{ \"Param1\": { \"equalTo\": \"2022-03-18T00:00:00.0000000\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
