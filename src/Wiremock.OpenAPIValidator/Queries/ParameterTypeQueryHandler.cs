@@ -22,7 +22,7 @@ public class ParameterTypeQueryHandler
             return Task.FromResult(new ValidatorNode());
         }
 
-        var propExists = TryParseAsObject(request.MockedParameters, out var mockedProperty);
+        var propExists = TryGetMockedParam(request.MockedParameters, request.Param.Name, out var mockedProperty);
         if (!propExists && request.Param.Required)
         {
             return Task.FromResult(new ValidatorNode
@@ -158,15 +158,24 @@ public class ParameterTypeQueryHandler
         _ => throw new NotImplementedException(),
     };
 
-    private static bool TryParseAsObject(string? input, [NotNullWhen(true)] out JsonObject? json)
+    private static bool TryGetMockedParam(string? input, string paramName, [NotNullWhen(true)] out JsonObject? param)
     {
-        if (input is not null && JsonNode.Parse(input) is JsonObject obj)
+        param = null;
+
+        if (input is null)
         {
-            json = obj;
-            return true;
+            return false;
+        }
+        if (JsonNode.Parse(input) is not JsonObject outer)
+        {
+            return false;
+        }
+        if (outer[paramName] is not JsonObject inner)
+        {
+            return false;
         }
 
-        json = null;
-        return false;
+        param = inner;
+        return true;
     }
 }

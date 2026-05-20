@@ -275,6 +275,50 @@ public class ParameterTypeQueryHandlerTests
     }
 
     [Test]
+    public async Task Handle_NullMockedParameters_Required()
+    {
+        var response = await _handler.Handle(new ParameterTypeQuery
+        {
+            Name = "UnitTest",
+            Param = new OpenApiParameter
+            {
+                Name = "Param1",
+                Required = true
+            },
+            MockedParameters = null
+        }, CancellationToken.None);
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.Type, Is.EqualTo(ValidatorType.ParamType));
+            Assert.That(response.Name, Is.EqualTo("UnitTest"));
+            Assert.That(response.ValidationResult, Is.EqualTo(ValidationResult.Failed));
+            Assert.That(response.Description, Is.Not.Null.And.Contains("Param1"));
+        });
+    }
+
+    [Test]
+    public async Task Handle_NullMockedParameters_Optional()
+    {
+        var response = await _handler.Handle(new ParameterTypeQuery
+        {
+            Name = "UnitTest",
+            Param = new OpenApiParameter
+            {
+                Name = "Param1",
+                Required = false
+            },
+            MockedParameters = null
+        }, CancellationToken.None);
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.Type, Is.EqualTo(ValidatorType.ParamType));
+            Assert.That(response.Name, Is.EqualTo("UnitTest"));
+            Assert.That(response.ValidationResult, Is.EqualTo(ValidationResult.Warning));
+            Assert.That(response.Description, Is.Not.Null.And.Contains("Param1"));
+        });
+    }
+
+    [Test]
     public async Task Handle_NullParam()
     {
         var mockedParam = "{ \"Param1\": { \"equalTo\": \"2022-03-18T00:00:00.0000000\" } }";
