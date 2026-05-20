@@ -1,6 +1,4 @@
 ﻿using Microsoft.OpenApi.Models;
-using System.IO;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace Wiremock.OpenAPIValidator.Queries;
@@ -20,7 +18,7 @@ public class ParameterRequiredQueryHandler
             return Task.FromResult(new ValidatorNode());
         }
 
-        var exists = ParameterExists(request.Param.Name, request.MockedParameters);
+        var exists = ParameterExistsInMock(request.Param.Name, request.MockedParameters);
 
         if (!exists && request.Param.Required)
         {
@@ -51,7 +49,7 @@ public class ParameterRequiredQueryHandler
         });
     }
 
-    private static bool ParameterExists(string paramName, string? mockedParameter)
+    private static bool ParameterExistsInMock(string paramName, string? mockedParameter)
     {
         if (mockedParameter is null)
         {
