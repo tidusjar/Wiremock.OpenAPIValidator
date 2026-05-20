@@ -265,7 +265,7 @@ public class ParameterTypeQueryHandlerTests
     }
 
     [Test]
-    public async Task Handle_NullMockedParameters_Required()
+    public async Task Handle_NullMockedParameters_WhenRequired()
     {
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -287,7 +287,7 @@ public class ParameterTypeQueryHandlerTests
     }
 
     [Test]
-    public async Task Handle_NullMockedParameters_Optional()
+    public async Task Handle_NullMockedParameters_WhenOptional()
     {
         var response = await _handler.Handle(new ParameterTypeQuery
         {
