@@ -1,6 +1,8 @@
 ﻿using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 
 namespace Wiremock.OpenAPIValidator.Queries;
@@ -8,7 +10,7 @@ namespace Wiremock.OpenAPIValidator.Queries;
 public class ParameterTypeQuery : BaseQuery
 {
     public OpenApiParameter? Param { get; set; }
-    public JsonElement MockedParameters { get; set; }
+    public string? MockedParameters { get; set; }
 }
 
 public class ParameterTypeQueryHandler
@@ -19,8 +21,10 @@ public class ParameterTypeQueryHandler
         {
             return Task.FromResult(new ValidatorNode());
         }
-        var existingProp = request.MockedParameters.TryGetProperty(request.Param.Name, out var mockedProperty);
-        if (!existingProp && request.Param.Required)
+
+        var propExists = TryGetMockedParam(request.MockedParameters, request.Param.Name, out var mockedProperty);
+
+        if (!propExists && request.Param.Required)
         {
             return Task.FromResult(new ValidatorNode
             {
@@ -30,7 +34,7 @@ public class ParameterTypeQueryHandler
                 ValidationResult = ValidationResult.Failed
             });
         }
-        else if (!existingProp && !request.Param.Required)
+        else if (!propExists && !request.Param.Required)
         {
             return Task.FromResult(new ValidatorNode
             {
@@ -154,4 +158,25 @@ public class ParameterTypeQueryHandler
         "int64" => typeof(long),
         _ => throw new NotImplementedException(),
     };
+
+    private static bool TryGetMockedParam(string? input, string paramName, [NotNullWhen(true)] out JsonObject? param)
+    {
+        param = null;
+
+        if (input is null)
+        {
+            return false;
+        }
+        if (JsonNode.Parse(input) is not JsonObject outer)
+        {
+            return false;
+        }
+        if (outer[paramName] is not JsonObject inner)
+        {
+            return false;
+        }
+
+        param = inner;
+        return true;
+    }
 }

@@ -1,12 +1,12 @@
 ﻿using Microsoft.OpenApi.Models;
-using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Wiremock.OpenAPIValidator.Queries;
 
 public class ParameterRequiredQuery : BaseQuery
 {
     public OpenApiParameter? Param { get; set; }
-    public JsonElement MockedParameters { get; set; }
+    public string? MockedParameters { get; set; }
 }
 
 public class ParameterRequiredQueryHandler
@@ -17,9 +17,10 @@ public class ParameterRequiredQueryHandler
         {
             return Task.FromResult(new ValidatorNode());
         }
-        var existingProp = request.MockedParameters.TryGetProperty(request.Param.Name, out var _);
 
-        if (!existingProp && request.Param.Required)
+        var exists = MockParameterExists(request.Param.Name, request.MockedParameters);
+
+        if (!exists && request.Param.Required)
         {
             return Task.FromResult(new ValidatorNode
             {
@@ -29,7 +30,7 @@ public class ParameterRequiredQueryHandler
                 ValidationResult = ValidationResult.Failed
             });
         }
-        else if (!existingProp && !request.Param.Required)
+        else if (!exists && !request.Param.Required)
         {
             return Task.FromResult(new ValidatorNode
             {
@@ -46,5 +47,15 @@ public class ParameterRequiredQueryHandler
             Type = ValidatorType.ParamRequired,
             ValidationResult = ValidationResult.Passed
         });
+    }
+
+    private static bool MockParameterExists(string paramName, string? mockedParameter)
+    {
+        if (mockedParameter is null)
+        {
+            return false;
+        }
+
+        return JsonNode.Parse(mockedParameter) is JsonObject json && json.ContainsKey(paramName);
     }
 }

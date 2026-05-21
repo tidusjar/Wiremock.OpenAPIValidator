@@ -1,12 +1,6 @@
 ﻿using Microsoft.OpenApi.Models;
 using Moq;
 using Moq.AutoMock;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 using Wiremock.OpenAPIValidator.Commands;
 using Wiremock.OpenAPIValidator.Models;
 using Wiremock.OpenAPIValidator.Queries;
@@ -28,8 +22,6 @@ namespace Wiremock.OpenAPIValidator.Tests
         [Test]
         public async Task SuccessfulValidation()
         {
-            
-
             _mocker.Setup<IMediator, Task<OpenApiDocument>>(x => x.Send<OpenApiDocument>(It.IsAny<OpenApiDocumentReaderCommand>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new OpenApiDocument
                 {
@@ -43,7 +35,6 @@ namespace Wiremock.OpenAPIValidator.Tests
                .ReturnsAsync(new[] { "" });
 
             var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
-            var doc = JsonDocument.Parse(mockedParam);
             var parsedMappings = new WiremockMappings
             {
                 Mappings = new List<WiremockMapping>()
@@ -53,7 +44,7 @@ namespace Wiremock.OpenAPIValidator.Tests
                             Request = new WiremockRequest
                             {
                                 UrlPattern = "abc",
-                                QueryParameters = doc.RootElement
+                                QueryParameters = mockedParam
                             },
                             Response = new WiremockResponse
                             {
@@ -65,7 +56,7 @@ namespace Wiremock.OpenAPIValidator.Tests
                             Request = new WiremockRequest
                             {
                                 UrlPattern = "def",
-                                QueryParameters = doc.RootElement
+                                QueryParameters = mockedParam
                             },
                             Response = new WiremockResponse
                             {
@@ -77,7 +68,7 @@ namespace Wiremock.OpenAPIValidator.Tests
                             Request = new WiremockRequest
                             {
                                 UrlPattern = "ghi",
-                                QueryParameters = doc.RootElement
+                                QueryParameters = mockedParam
                             },
                             Response = new WiremockResponse
                             {

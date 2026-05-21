@@ -1,6 +1,5 @@
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
-using System.Text.Json;
 using Wiremock.OpenAPIValidator.Queries;
 
 namespace Wiremock.OpenAPIValidator.Tests.Queries;
@@ -20,7 +19,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_RequiredMissingParam()
     {
         var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -30,7 +28,7 @@ public class ParameterTypeQueryHandlerTests
                 Name = "Param1",
                 Required = true
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -45,7 +43,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_OptionalMissingParam()
     {
         var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -55,7 +52,7 @@ public class ParameterTypeQueryHandlerTests
                 Name = "Param1",
                 Required = false
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -70,7 +67,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_RequiredParamCorrectTypeEnum()
     {
         var mockedParam = "{ \"Param1\": { \"equalTo\": \"All\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -84,7 +80,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -99,7 +95,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_RequiredParamIncorrectTypeEnum()
     {
         var mockedParam = "{ \"Param1\": { \"equalTo\": \"AAAAA\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -113,7 +108,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -128,7 +123,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_RequiredParamEqualsToCorrectTypeDateTime()
     {
         var mockedParam = "{ \"Param1\": { \"equalTo\": \"2022-03-18T00:00:00.0000000\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -142,7 +136,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -157,7 +151,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_RequiredParamMatchesCorrectTypeUuid()
     {
         var mockedParam = "{ \"Param1\": { \"matches\": \"^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -171,7 +164,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -186,7 +179,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_RequiredParamMatchesIncorrectTypeUuid()
     {
         var mockedParam = "{ \"Param1\": { \"matches\": \"^[{]?-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -200,7 +192,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -218,7 +210,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_RequiredParamMatchesNotSupportedType(string format)
     {
         var mockedParam = "{ \"Param1\": { \"matches\": \"^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -232,7 +223,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -249,7 +240,6 @@ public class ParameterTypeQueryHandlerTests
     public async Task Handle_RequiredParamEqualsToIncorrectType(string format)
     {
         var mockedParam = "{ \"Param1\": { \"equalTo\": \"2022-03-18T00:00:00.0000000\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
@@ -263,7 +253,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -275,16 +265,59 @@ public class ParameterTypeQueryHandlerTests
     }
 
     [Test]
+    public async Task Handle_NullMockedParameters_WhenRequired()
+    {
+        var response = await _handler.Handle(new ParameterTypeQuery
+        {
+            Name = "UnitTest",
+            Param = new OpenApiParameter
+            {
+                Name = "Param1",
+                Required = true
+            },
+            MockedParameters = null
+        }, CancellationToken.None);
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.Type, Is.EqualTo(ValidatorType.ParamType));
+            Assert.That(response.Name, Is.EqualTo("UnitTest"));
+            Assert.That(response.ValidationResult, Is.EqualTo(ValidationResult.Failed));
+            Assert.That(response.Description, Is.Not.Null.And.Contains("Param1"));
+        });
+    }
+
+    [Test]
+    public async Task Handle_NullMockedParameters_WhenOptional()
+    {
+        var response = await _handler.Handle(new ParameterTypeQuery
+        {
+            Name = "UnitTest",
+            Param = new OpenApiParameter
+            {
+                Name = "Param1",
+                Required = false
+            },
+            MockedParameters = null
+        }, CancellationToken.None);
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.Type, Is.EqualTo(ValidatorType.ParamType));
+            Assert.That(response.Name, Is.EqualTo("UnitTest"));
+            Assert.That(response.ValidationResult, Is.EqualTo(ValidationResult.Warning));
+            Assert.That(response.Description, Is.Not.Null.And.Contains("Param1"));
+        });
+    }
+
+    [Test]
     public async Task Handle_NullParam()
     {
         var mockedParam = "{ \"Param1\": { \"equalTo\": \"2022-03-18T00:00:00.0000000\" } }";
-        var doc = JsonDocument.Parse(mockedParam);
 
         var response = await _handler.Handle(new ParameterTypeQuery
         {
             Name = "UnitTest",
             Param = null,
-            MockedParameters = doc.RootElement
+            MockedParameters = mockedParam
         }, CancellationToken.None);
         Assert.That(response, Is.InstanceOf<ValidatorNode?>());
     }
