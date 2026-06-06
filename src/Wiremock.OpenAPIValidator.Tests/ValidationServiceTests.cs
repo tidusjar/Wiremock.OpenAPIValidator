@@ -1,124 +1,337 @@
-﻿using Microsoft.OpenApi.Models;
-using Moq;
-using Moq.AutoMock;
-using Wiremock.OpenAPIValidator.Commands;
-using Wiremock.OpenAPIValidator.Models;
-using Wiremock.OpenAPIValidator.Queries;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi.Extensions;
+using Microsoft.OpenApi.Models;
 
 namespace Wiremock.OpenAPIValidator.Tests
 {
     public class ValidationServiceTests
     {
         private ValidationService _service;
-        private AutoMocker _mocker;
+        private string _rootPath;
+        private string _mappingsPath;
+        private string _filesPath;
+        private string _specPath;
 
         [SetUp]
         public void Setup()
         {
-            _mocker = new AutoMocker();
-            _service = _mocker.CreateInstance<ValidationService>();
+            var provider = new ServiceCollection()
+                .AddValidatorServices()
+                .BuildServiceProvider();
+            _service = provider.GetRequiredService<ValidationService>();
+
+            // Standard WireMock layout: mappings/ and __files/ are siblings under a root.
+            _rootPath = Path.Combine(Path.GetTempPath(), $"wiremock-validation-{Guid.NewGuid():N}");
+            _mappingsPath = Path.Combine(_rootPath, "mappings");
+            _filesPath = Path.Combine(_rootPath, "__files");
+            Directory.CreateDirectory(_mappingsPath);
+            Directory.CreateDirectory(_filesPath);
+            _specPath = Path.Combine(_rootPath, "openapi.json");
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            if (Directory.Exists(_rootPath))
+            {
+                Directory.Delete(_rootPath, recursive: true);
+            }
         }
 
         [Test]
         public async Task SuccessfulValidation()
         {
-            _mocker.Setup<IMediator, Task<OpenApiDocument>>(x => x.Send<OpenApiDocument>(It.IsAny<OpenApiDocumentReaderCommand>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new OpenApiDocument
-                {
-                    Paths = new OpenApiPaths
-                    {
-                        { "/api/v1/path", new OpenApiPathItem() }
-                    }
-                });
+            WriteSpec(BuildSpec(
+                "/api/v1/widgets",
+                OperationType.Get,
+                "getWidgets",
+                new[] { QueryParam("id", required: true, format: "int32") },
+                new[] { ("id", "integer", true), ("name", "string", true) }));
 
-            _mocker.Setup<IMediator, Task<string[]>>(x => x.Send<string[]>(It.IsAny<WireMockMappingsQuery>(), It.IsAny<CancellationToken>()))
-               .ReturnsAsync(new[] { "" });
-
-            var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
-            var parsedMappings = new WiremockMappings
+            WriteResponseBody("widget.json", """{ "id": 1, "name": "widget" }""");
+            WriteMapping("widget.json", """
             {
-                Mappings = new List<WiremockMapping>()
+              "request": {
+                "method": "GET",
+                "urlPattern": "/api/v1/widgets",
+                "queryParameters": { "id": { "equalTo": "1" } }
+              },
+              "response": {
+                "status": 200,
+                "bodyFileName": "widget.json"
+              }
+            }
+            """);
+
+            var result = await _service.ValidateAsync(_specPath, _mappingsPath);
+
+            Assert.That(result.Results, Is.Not.Empty);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Results.Select(r => r.ValidationResult),
+                    Is.All.EqualTo(ValidationResult.Passed));
+                // Pin the full set of checks that ran, so a silently-dropped node type is caught.
+                Assert.That(result.Results.Select(r => r.Type).Distinct(), Is.EquivalentTo(new[]
+                {
+                    ValidatorType.UrlMatch,
+                    ValidatorType.Method,
+                    ValidatorType.ParamRequired,
+                    ValidatorType.ParamType,
+                    ValidatorType.ResponsePropertyRequired,
+                    ValidatorType.ResponsePropertyType,
+                }));
+                Assert.That(result.Valid, Is.True);
+            });
+        }
+
+        [Test]
+        public async Task InlineJsonBody_Validates()
+        {
+            WriteSpec(BuildSpec(
+                "/api/v1/widgets",
+                OperationType.Get,
+                "getWidgets",
+                parameters: null,
+                new[] { ("id", "integer", true), ("name", "string", true) }));
+
+            WriteMapping("widget.json", """
+            {
+              "request": {
+                "method": "GET",
+                "urlPattern": "/api/v1/widgets"
+              },
+              "response": {
+                "status": 200,
+                "jsonBody": { "id": 1, "name": "widget" }
+              }
+            }
+            """);
+
+            var result = await _service.ValidateAsync(_specPath, _mappingsPath);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(
+                    result.Results.Any(r => r.Type == ValidatorType.ResponsePropertyType
+                        && r.ValidationResult == ValidationResult.Passed),
+                    Is.True);
+                Assert.That(result.Valid, Is.True);
+            });
+        }
+
+        [Test]
+        public async Task UnmatchedPath_Fails()
+        {
+            WriteSpec(BuildSpec(
+                "/api/v1/widgets",
+                OperationType.Get,
+                "getWidgets",
+                parameters: null,
+                new[] { ("id", "integer", true) }));
+
+            WriteMapping("orphan.json", """
+            {
+              "request": {
+                "method": "GET",
+                "urlPattern": "/api/v1/nonexistent"
+              },
+              "response": {
+                "status": 200,
+                "jsonBody": { "id": 1 }
+              }
+            }
+            """);
+
+            var result = await _service.ValidateAsync(_specPath, _mappingsPath);
+
+            Assert.Multiple(() =>
+            {
+                // The unmatched path is the only failure; nothing downstream should run.
+                Assert.That(
+                    result.Results.Where(r => r.ValidationResult == ValidationResult.Failed)
+                        .Select(r => r.Type),
+                    Is.EquivalentTo(new[] { ValidatorType.UrlMatch }));
+                Assert.That(result.Valid, Is.False);
+            });
+        }
+
+        [Test]
+        public async Task MissingRequiredParam_Fails()
+        {
+            WriteSpec(BuildSpec(
+                "/api/v1/widgets",
+                OperationType.Get,
+                "getWidgets",
+                new[] { QueryParam("id", required: true, format: "int32") },
+                new[] { ("id", "integer", true) }));
+
+            WriteMapping("widget.json", """
+            {
+              "request": {
+                "method": "GET",
+                "urlPattern": "/api/v1/widgets"
+              },
+              "response": {
+                "status": 200,
+                "jsonBody": { "id": 1 }
+              }
+            }
+            """);
+
+            var result = await _service.ValidateAsync(_specPath, _mappingsPath);
+
+            Assert.Multiple(() =>
+            {
+                // The absent required param is the only thing that fails (both param checks for it).
+                Assert.That(
+                    result.Results.Where(r => r.ValidationResult == ValidationResult.Failed)
+                        .Select(r => r.Type),
+                    Is.EquivalentTo(new[] { ValidatorType.ParamRequired, ValidatorType.ParamType }));
+                Assert.That(result.Valid, Is.False);
+            });
+        }
+
+        [Test]
+        public async Task MissingRequiredResponseProperty_Fails()
+        {
+            WriteSpec(BuildSpec(
+                "/api/v1/widgets",
+                OperationType.Get,
+                "getWidgets",
+                parameters: null,
+                new[] { ("id", "integer", true), ("name", "string", true) }));
+
+            WriteMapping("widget.json", """
+            {
+              "request": {
+                "method": "GET",
+                "urlPattern": "/api/v1/widgets"
+              },
+              "response": {
+                "status": 200,
+                "jsonBody": { "id": 1 }
+              }
+            }
+            """);
+
+            var result = await _service.ValidateAsync(_specPath, _mappingsPath);
+
+            Assert.Multiple(() =>
+            {
+                // The missing required property is the only failure.
+                Assert.That(
+                    result.Results.Where(r => r.ValidationResult == ValidationResult.Failed)
+                        .Select(r => r.Type),
+                    Is.EquivalentTo(new[] { ValidatorType.ResponsePropertyRequired }));
+                Assert.That(result.Valid, Is.False);
+            });
+        }
+
+        [Test]
+        public async Task OptionalProperty_Warns()
+        {
+            WriteSpec(BuildSpec(
+                "/api/v1/widgets",
+                OperationType.Get,
+                "getWidgets",
+                parameters: null,
+                new[] { ("id", "integer", true), ("description", "string", false) }));
+
+            WriteMapping("widget.json", """
+            {
+              "request": {
+                "method": "GET",
+                "urlPattern": "/api/v1/widgets"
+              },
+              "response": {
+                "status": 200,
+                "jsonBody": { "id": 1 }
+              }
+            }
+            """);
+
+            var result = await _service.ValidateAsync(_specPath, _mappingsPath);
+
+            Assert.Multiple(() =>
+            {
+                // An absent optional property warns rather than fails.
+                Assert.That(
+                    result.Results.Any(r => r.ValidationResult == ValidationResult.Failed),
+                    Is.False);
+                Assert.That(
+                    result.Results.Any(r => r.Type == ValidatorType.ResponsePropertyRequired
+                        && r.ValidationResult == ValidationResult.Warning),
+                    Is.True);
+                Assert.That(result.Valid, Is.False);
+            });
+        }
+
+        // ---- helpers ----
+
+        private void WriteSpec(OpenApiDocument document) =>
+            File.WriteAllText(_specPath, document.SerializeAsJson(OpenApiSpecVersion.OpenApi3_0));
+
+        private void WriteMapping(string fileName, string json) =>
+            File.WriteAllText(Path.Combine(_mappingsPath, fileName), json);
+
+        private void WriteResponseBody(string fileName, string json) =>
+            File.WriteAllText(Path.Combine(_filesPath, fileName), json);
+
+        private static OpenApiParameter QueryParam(string name, bool required, string format) =>
+            new()
+            {
+                Name = name,
+                In = ParameterLocation.Query,
+                Required = required,
+                Schema = new OpenApiSchema { Type = "string", Format = format }
+            };
+
+        private static OpenApiDocument BuildSpec(
+            string path,
+            OperationType method,
+            string operationId,
+            IEnumerable<OpenApiParameter>? parameters,
+            IEnumerable<(string Name, string Type, bool Required)> responseProperties)
+        {
+            var schema = new OpenApiSchema { Type = "object" };
+            foreach (var property in responseProperties)
+            {
+                schema.Properties[property.Name] = new OpenApiSchema { Type = property.Type };
+                if (property.Required)
+                {
+                    schema.Required.Add(property.Name);
+                }
+            }
+
+            var operation = new OpenApiOperation
+            {
+                OperationId = operationId,
+                Parameters = parameters?.ToList() ?? new List<OpenApiParameter>(),
+                Responses = new OpenApiResponses
+                {
+                    ["200"] = new OpenApiResponse
                     {
-                        new WiremockMapping()
+                        Description = "OK",
+                        Content =
                         {
-                            Request = new WiremockRequest
-                            {
-                                UrlPattern = "abc",
-                                QueryParameters = mockedParam
-                            },
-                            Response = new WiremockResponse
-                            {
-                                FileName = "Test1"
-                            }
-                        },
-                        new WiremockMapping()
-                        {
-                            Request = new WiremockRequest
-                            {
-                                UrlPattern = "def",
-                                QueryParameters = mockedParam
-                            },
-                            Response = new WiremockResponse
-                            {
-                                FileName = "Test2"
-                            }
-                        },
-                        new WiremockMapping()
-                        {
-                            Request = new WiremockRequest
-                            {
-                                UrlPattern = "ghi",
-                                QueryParameters = mockedParam
-                            },
-                            Response = new WiremockResponse
-                            {
-                                FileName = "Test3"
-                            }
+                            ["application/json"] = new OpenApiMediaType { Schema = schema }
                         }
                     }
+                }
             };
-            _mocker.Setup<IMediator, Task<WiremockMappings?>>(x => x.Send<WiremockMappings?>(It.IsAny<WiremockMappingsReaderCommand>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(parsedMappings);
 
-            _mocker.Setup<IMediator, Task<UrlPathMatchResult>>(x => x.Send<UrlPathMatchResult>(It.IsAny<UrlPathMatchQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new UrlPathMatchResult
+            return new OpenApiDocument
+            {
+                Info = new OpenApiInfo { Title = "Test API", Version = "1.0.0" },
+                Paths = new OpenApiPaths
                 {
-                    ValidationNode = new ValidatorNode(),
-                    MatchedPath = new OpenApiPathItem
+                    [path] = new OpenApiPathItem
                     {
-                        Operations = new Dictionary<OperationType, OpenApiOperation> { { OperationType.Put, new OpenApiOperation {
-                            OperationId = "UnitTest",
-                            Parameters = new List<OpenApiParameter> { new OpenApiParameter {  Required = true, Name = "TestParam"} }
-                        } } }
+                        Operations = { [method] = operation }
                     }
-                });
-
-            _mocker.Setup<IMediator, Task<WiremockResponseProperties>>(x => x.Send<WiremockResponseProperties>(It.IsAny<WiremockResponseReaderCommand>(), It.IsAny<CancellationToken>()))
-               .ReturnsAsync(new WiremockResponseProperties());
-
-            _mocker.Setup<IMediator, Task<List<ValidatorNode>>>(x => x.Send<List<ValidatorNode>>(It.IsAny<PropertyRequiredQuery>(), It.IsAny<CancellationToken>()))
-               .ReturnsAsync(new List<ValidatorNode>());
-
-            _mocker.Setup<IMediator, Task<List<ValidatorNode>>>(x => x.Send<List<ValidatorNode>>(It.IsAny<PropertyTypeQuery>(), It.IsAny<CancellationToken>()))
-               .ReturnsAsync(new List<ValidatorNode>());
-
-            var result = await _service.ValidateAsync("test1", "test2");
-
-            Assert.That(result, Is.Not.Null);
-
-            var mediatorMock = _mocker.GetMock<IMediator>();
-
-            mediatorMock.Verify(x => x.Send<OpenApiDocument>(It.IsAny<OpenApiDocumentReaderCommand>(), It.IsAny<CancellationToken>()), Times.Once);
-            mediatorMock.Verify(x => x.Send<string[]>(It.IsAny<WireMockMappingsQuery>(), It.IsAny<CancellationToken>()), Times.Once);
-            mediatorMock.Verify(x => x.Send<WiremockMappings?>(It.IsAny<WiremockMappingsReaderCommand>(), It.IsAny<CancellationToken>()), Times.Once);
-
-            mediatorMock.Verify(x => x.Send<UrlPathMatchResult>(It.IsAny<UrlPathMatchQuery>(), It.IsAny<CancellationToken>()), Times.Exactly(parsedMappings.Mappings.Count));
-            mediatorMock.Verify(x => x.Send<ValidatorNode>(It.IsAny<HttpMethodQuery>(), It.IsAny<CancellationToken>()), Times.Exactly(parsedMappings.Mappings.Count));
-            mediatorMock.Verify(x => x.Send<ValidatorNode>(It.IsAny<ParameterRequiredQuery>(), It.IsAny<CancellationToken>()), Times.Exactly(parsedMappings.Mappings.Count));
-            mediatorMock.Verify(x => x.Send<ValidatorNode>(It.IsAny<ParameterTypeQuery>(), It.IsAny<CancellationToken>()), Times.Exactly(parsedMappings.Mappings.Count));
-            mediatorMock.Verify(x => x.Send<WiremockResponseProperties>(It.IsAny<WiremockResponseReaderCommand>(), It.IsAny<CancellationToken>()), Times.Exactly(parsedMappings.Mappings.Count));
-            mediatorMock.Verify(x => x.Send<List<ValidatorNode>>(It.IsAny<PropertyRequiredQuery>(), It.IsAny<CancellationToken>()), Times.Exactly(parsedMappings.Mappings.Count));
-            mediatorMock.Verify(x => x.Send<List<ValidatorNode>>(It.IsAny<PropertyTypeQuery>(), It.IsAny<CancellationToken>()), Times.Exactly(parsedMappings.Mappings.Count));
+                }
+            };
         }
     }
 }

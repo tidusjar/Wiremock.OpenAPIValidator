@@ -1,5 +1,5 @@
 using Microsoft.OpenApi.Models;
-using System.Text.Json;
+using System.Text.Json.Nodes;
 using Wiremock.OpenAPIValidator.Queries;
 
 namespace Wiremock.OpenAPIValidator.Tests.Queries;
@@ -28,7 +28,7 @@ public class ParameterRequiredQueryHandlerTests
                 Name = "Param1",
                 Required = true
             },
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -52,7 +52,7 @@ public class ParameterRequiredQueryHandlerTests
                 Name = "Param1",
                 Required = false
             },
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -72,7 +72,7 @@ public class ParameterRequiredQueryHandlerTests
         {
             Name = "UnitTest",
             Param = null,
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.That(response, Is.InstanceOf<ValidatorNode?>());
     }
@@ -90,7 +90,7 @@ public class ParameterRequiredQueryHandlerTests
                 Name = "Param1",
                 Required = required
             },
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {

@@ -1,5 +1,6 @@
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using System.Text.Json.Nodes;
 using Wiremock.OpenAPIValidator.Queries;
 
 namespace Wiremock.OpenAPIValidator.Tests.Queries;
@@ -28,7 +29,7 @@ public class ParameterTypeQueryHandlerTests
                 Name = "Param1",
                 Required = true
             },
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -52,7 +53,7 @@ public class ParameterTypeQueryHandlerTests
                 Name = "Param1",
                 Required = false
             },
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -80,7 +81,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -108,7 +109,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -136,7 +137,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -164,7 +165,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -192,7 +193,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -223,7 +224,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -253,7 +254,7 @@ public class ParameterTypeQueryHandlerTests
                 },
                 Required = false
             },
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -317,7 +318,7 @@ public class ParameterTypeQueryHandlerTests
         {
             Name = "UnitTest",
             Param = null,
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.That(response, Is.InstanceOf<ValidatorNode?>());
     }

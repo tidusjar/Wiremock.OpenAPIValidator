@@ -94,7 +94,7 @@ public class ValidationService
 
                 var mockedResponse = await _mediator.Send<Models.WiremockResponseProperties>(new WiremockResponseReaderCommand
                 {
-                    MockResponseFileName = mapping.Response.FileName,
+                    WiremockResponse = mapping.Response,
                     WiremockMappingPath = wireMockMappings
                 });
 

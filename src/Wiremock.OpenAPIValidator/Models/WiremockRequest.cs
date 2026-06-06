@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 
 namespace Wiremock.OpenAPIValidator
 {
@@ -18,6 +19,6 @@ namespace Wiremock.OpenAPIValidator
         }
 
         [JsonPropertyName("queryParameters")]
-        public string? QueryParameters { get; set; }
+        public JsonNode? QueryParameters { get; set; }
     }
 }

@@ -7,7 +7,7 @@ namespace Wiremock.OpenAPIValidator.Commands;
 public class WiremockResponseReaderCommand
 {
     public string WiremockMappingPath { get; set; } = string.Empty;
-    public string MockResponseFileName { get; set; } = string.Empty;
+    public WiremockResponse? WiremockResponse { get; set; }
 }
 
 public class WiremockResponseReaderCommandHandler
@@ -16,38 +16,66 @@ public class WiremockResponseReaderCommandHandler
     {
         var result = new WiremockResponseProperties();
 
-        if (!Directory.Exists(request.WiremockMappingPath))
+        if (request.WiremockResponse == null)
         {
             return Task.FromResult(result);
+        }
+
+        var responseBody = ReadResponseBody(request);
+
+        if (responseBody is null)
+        {
+            return Task.FromResult(result);
+        }
+
+        switch (responseBody.GetValueKind())
+        {
+            case JsonValueKind.Object:
+                result.ObjectType = ObjectType.Object;
+                TryAddProperty(result, responseBody.AsObject());
+                break;
+            case JsonValueKind.Array:
+                result.ObjectType = ObjectType.Array;
+                foreach (var item in responseBody.AsArray())
+                {
+                    TryAddProperty(result, item?.AsObject());
+                }
+                break;
+        }
+
+        return Task.FromResult(result);
+    }
+
+    private static JsonNode? ReadResponseBody(WiremockResponseReaderCommand request)
+    {
+        var response = request.WiremockResponse!;
+
+        if (response.JsonBody is not null)
+        {
+            return response.JsonBody;
+        }
+
+        if (string.IsNullOrEmpty(response.FileName) || !Directory.Exists(request.WiremockMappingPath))
+        {
+            return null;
         }
 
         var parentWiremock = Directory.GetParent(request.WiremockMappingPath);
 
         if (parentWiremock == null)
         {
-            return Task.FromResult(result);
-        }
-        using var responseStream = File.OpenRead(Path.Combine(parentWiremock.FullName, "__files", request.MockResponseFileName));
-        var doc = JsonDocument.Parse(responseStream);
-        if (doc.RootElement.ValueKind == JsonValueKind.Object)
-        {
-            result.ObjectType = ObjectType.Object;
-            TryAddProperty(result, doc.Deserialize<JsonObject>());
-        }
-        else if (doc.RootElement.ValueKind == JsonValueKind.Array)
-        {
-            var responseObjects = doc.Deserialize<JsonArray>();
-            result.ObjectType = ObjectType.Array;
-            if (responseObjects != null)
-            {
-                foreach (var item in responseObjects)
-                {
-                    TryAddProperty(result, item.Deserialize<JsonObject>());
-                }
-            }
+            return null;
         }
 
-        return Task.FromResult(result);
+        var responseFilePath = Path.Combine(parentWiremock.FullName, "__files", response.FileName);
+
+        if (!File.Exists(responseFilePath))
+        {
+            return null;
+        }
+
+        using var responseStream = File.OpenRead(responseFilePath);
+        return JsonNode.Parse(responseStream);
     }
 
     private static void TryAddProperty(WiremockResponseProperties result, JsonObject? responseObjects)
