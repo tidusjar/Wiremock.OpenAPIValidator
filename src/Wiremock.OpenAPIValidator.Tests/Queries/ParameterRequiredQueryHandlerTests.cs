@@ -18,7 +18,7 @@ public class ParameterRequiredQueryHandlerTests
     [Test]
     public async Task Handle_RequiredMissingParam()
     {
-        var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
+        var mockedParam = """{ "Param2": { "equalTo": "All" } }""";
 
         var response = await _handler.Handle(new ParameterRequiredQuery
         {
@@ -42,7 +42,7 @@ public class ParameterRequiredQueryHandlerTests
     [Test]
     public async Task Handle_OptionalMissingParam()
     {
-        var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
+        var mockedParam = """{ "Param2": { "equalTo": "All" } }""";
 
         var response = await _handler.Handle(new ParameterRequiredQuery
         {
@@ -66,7 +66,7 @@ public class ParameterRequiredQueryHandlerTests
     [Test]
     public async Task Handle_NullParam()
     {
-        var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
+        var mockedParam = """{ "Param2": { "equalTo": "All" } }""";
 
         var response = await _handler.Handle(new ParameterRequiredQuery
         {
@@ -80,7 +80,7 @@ public class ParameterRequiredQueryHandlerTests
     [Test]
     public async Task Handle_CorrectParam([Values] bool required)
     {
-        var mockedParam = "{ \"Param1\": { \"equalTo\": \"All\" } }";
+        var mockedParam = """{ "Param1": { "equalTo": "All" } }""";
 
         var response = await _handler.Handle(new ParameterRequiredQuery
         {
