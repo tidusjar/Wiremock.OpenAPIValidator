@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Nodes;
-using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi.Models;
 using Wiremock.OpenAPIValidator.Commands;
 using Wiremock.OpenAPIValidator.Queries;
 
@@ -113,7 +111,6 @@ public class ValidationService
                     Name = operation.OperationId,
                     Responses = operation.Responses
                 }));
-
 
             }
         }

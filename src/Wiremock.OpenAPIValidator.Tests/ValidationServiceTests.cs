@@ -193,6 +193,52 @@ namespace Wiremock.OpenAPIValidator.Tests
         }
 
         [Test]
+        public async Task NullQueryParameters_WithOptionalParam_Warns()
+        {
+            // The mapping omits the "queryParameters" block entirely, so
+            // WiremockRequest.QueryParameters deserializes to null. The param checks
+            // must run without throwing and warn (rather than fail) for an optional param.
+            WriteSpec(BuildSpec(
+                "/api/v1/widgets",
+                OperationType.Get,
+                "getWidgets",
+                new[] { QueryParam("id", required: false, format: "int32") },
+                new[] { ("id", "integer", true) }));
+
+            WriteMapping("widget.json", """
+            {
+              "request": {
+                "method": "GET",
+                "urlPattern": "/api/v1/widgets"
+              },
+              "response": {
+                "status": 200,
+                "jsonBody": { "id": 1 }
+              }
+            }
+            """);
+
+            var result = await _service.ValidateAsync(_specPath, _mappingsPath);
+
+            Assert.Multiple(() =>
+            {
+                // No check should fail when the absent param is optional.
+                Assert.That(
+                    result.Results.Any(r => r.ValidationResult == ValidationResult.Failed),
+                    Is.False);
+                // Both param checks warn for the absent optional param.
+                Assert.That(
+                    result.Results.Where(r => r.Type == ValidatorType.ParamRequired)
+                        .Select(r => r.ValidationResult),
+                    Is.EquivalentTo(new[] { ValidationResult.Warning }));
+                Assert.That(
+                    result.Results.Where(r => r.Type == ValidatorType.ParamType)
+                        .Select(r => r.ValidationResult),
+                    Is.EquivalentTo(new[] { ValidationResult.Warning }));
+            });
+        }
+
+        [Test]
         public async Task MissingRequiredResponseProperty_Fails()
         {
             WriteSpec(BuildSpec(
@@ -267,7 +313,7 @@ namespace Wiremock.OpenAPIValidator.Tests
             });
         }
 
-        // ---- helpers ----
+        #region helpers
 
         private void WriteSpec(OpenApiDocument document) =>
             File.WriteAllText(_specPath, document.SerializeAsJson(OpenApiSpecVersion.OpenApi3_0));
@@ -332,6 +378,8 @@ namespace Wiremock.OpenAPIValidator.Tests
                     }
                 }
             };
+
+            #endregion
         }
     }
 }
