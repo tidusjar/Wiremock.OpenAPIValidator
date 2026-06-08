@@ -1,5 +1,5 @@
 using Microsoft.OpenApi.Models;
-using System.Text.Json;
+using System.Text.Json.Nodes;
 using Wiremock.OpenAPIValidator.Queries;
 
 namespace Wiremock.OpenAPIValidator.Tests.Queries;
@@ -18,7 +18,7 @@ public class ParameterRequiredQueryHandlerTests
     [Test]
     public async Task Handle_RequiredMissingParam()
     {
-        var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
+        var mockedParam = """{ "Param2": { "equalTo": "All" } }""";
 
         var response = await _handler.Handle(new ParameterRequiredQuery
         {
@@ -28,7 +28,7 @@ public class ParameterRequiredQueryHandlerTests
                 Name = "Param1",
                 Required = true
             },
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -42,7 +42,7 @@ public class ParameterRequiredQueryHandlerTests
     [Test]
     public async Task Handle_OptionalMissingParam()
     {
-        var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
+        var mockedParam = """{ "Param2": { "equalTo": "All" } }""";
 
         var response = await _handler.Handle(new ParameterRequiredQuery
         {
@@ -52,7 +52,7 @@ public class ParameterRequiredQueryHandlerTests
                 Name = "Param1",
                 Required = false
             },
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {
@@ -66,13 +66,13 @@ public class ParameterRequiredQueryHandlerTests
     [Test]
     public async Task Handle_NullParam()
     {
-        var mockedParam = "{ \"Param2\": { \"equalTo\": \"All\" } }";
+        var mockedParam = """{ "Param2": { "equalTo": "All" } }""";
 
         var response = await _handler.Handle(new ParameterRequiredQuery
         {
             Name = "UnitTest",
             Param = null,
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.That(response, Is.InstanceOf<ValidatorNode?>());
     }
@@ -80,7 +80,7 @@ public class ParameterRequiredQueryHandlerTests
     [Test]
     public async Task Handle_CorrectParam([Values] bool required)
     {
-        var mockedParam = "{ \"Param1\": { \"equalTo\": \"All\" } }";
+        var mockedParam = """{ "Param1": { "equalTo": "All" } }""";
 
         var response = await _handler.Handle(new ParameterRequiredQuery
         {
@@ -90,7 +90,7 @@ public class ParameterRequiredQueryHandlerTests
                 Name = "Param1",
                 Required = required
             },
-            MockedParameters = mockedParam
+            MockedParameters = JsonNode.Parse(mockedParam)
         }, CancellationToken.None);
         Assert.Multiple(() =>
         {

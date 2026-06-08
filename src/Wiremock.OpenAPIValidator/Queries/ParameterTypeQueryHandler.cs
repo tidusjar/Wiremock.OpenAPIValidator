@@ -10,7 +10,7 @@ namespace Wiremock.OpenAPIValidator.Queries;
 public class ParameterTypeQuery : BaseQuery
 {
     public OpenApiParameter? Param { get; set; }
-    public string? MockedParameters { get; set; }
+    public JsonNode? MockedParameters { get; set; }
 }
 
 public class ParameterTypeQueryHandler
@@ -159,15 +159,11 @@ public class ParameterTypeQueryHandler
         _ => throw new NotImplementedException(),
     };
 
-    private static bool TryGetMockedParam(string? input, string paramName, [NotNullWhen(true)] out JsonObject? param)
+    private static bool TryGetMockedParam(JsonNode? input, string paramName, [NotNullWhen(true)] out JsonObject? param)
     {
         param = null;
 
-        if (input is null)
-        {
-            return false;
-        }
-        if (JsonNode.Parse(input) is not JsonObject outer)
+        if (input is not JsonObject outer)
         {
             return false;
         }

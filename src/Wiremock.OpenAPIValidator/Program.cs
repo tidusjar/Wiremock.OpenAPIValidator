@@ -60,32 +60,8 @@ namespace Wiremock.OpenAPIValidator
             }
 
 
-            var services = new ServiceCollection();
-
-            // Register mediator
-            services.AddSingleton<IMediator, SimpleMediator>();
-
-            // Register all handlers
-            services.AddTransient<OpenApiDocumentReaderHandler>();
-            services.AddTransient<WiremockMappingsReaderCommandHandler>();
-            services.AddTransient<WiremockResponseReaderCommandHandler>();
-            services.AddTransient<HttpMethodQueryHandler>();
-            services.AddTransient<ParameterTypeQueryHandler>();
-            services.AddTransient<ParameterRequiredQueryHandler>();
-            services.AddTransient<PropertyTypeQueryHandler>();
-            services.AddTransient<PropertyRequiredQueryHandler>();
-            services.AddTransient<WireMockMappingsQueryHandler>();
-            services.AddTransient<ServiceInfromationQueryHandler>();
-            services.AddTransient<UrlPathMatchQueryHandler>();
-
-            // Register formatters
-            services.AddTransient<ConsoleOutputFormatter>();
-            services.AddTransient<JsonOutputFormatter>();
-            services.AddTransient<JUnitXmlOutputFormatter>();
-            services.AddTransient<GitHubActionsFormatter>();
-
-            // Register validation service
-            services.AddSingleton<ValidationService>();
+            var services = new ServiceCollection()
+                .AddValidatorServices();
 
             var provider = services.BuildServiceProvider();
             var validationService = provider.GetRequiredService<ValidationService>();

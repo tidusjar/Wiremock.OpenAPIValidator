@@ -6,7 +6,7 @@ namespace Wiremock.OpenAPIValidator.Queries;
 public class ParameterRequiredQuery : BaseQuery
 {
     public OpenApiParameter? Param { get; set; }
-    public string? MockedParameters { get; set; }
+    public JsonNode? MockedParameters { get; set; }
 }
 
 public class ParameterRequiredQueryHandler
@@ -49,13 +49,8 @@ public class ParameterRequiredQueryHandler
         });
     }
 
-    private static bool MockParameterExists(string paramName, string? mockedParameter)
+    private static bool MockParameterExists(string paramName, JsonNode? mockedParameter)
     {
-        if (mockedParameter is null)
-        {
-            return false;
-        }
-
-        return JsonNode.Parse(mockedParameter) is JsonObject json && json.ContainsKey(paramName);
+        return mockedParameter is JsonObject json && json.ContainsKey(paramName);
     }
 }

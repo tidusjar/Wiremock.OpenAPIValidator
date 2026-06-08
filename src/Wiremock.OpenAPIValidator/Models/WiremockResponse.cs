@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace Wiremock.OpenAPIValidator
@@ -9,6 +10,8 @@ namespace Wiremock.OpenAPIValidator
         public HttpStatusCode Status { get; set; }
         [JsonPropertyName("bodyFileName")]
         public string FileName { get; set; } = string.Empty;
+        [JsonPropertyName("jsonBody")]
+        public JsonNode? JsonBody { get; set; }
         [JsonPropertyName("headers")]
         public WiremockHeaders? Headers { get; set; }
     }

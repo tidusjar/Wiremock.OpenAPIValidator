@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Nodes;
-using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi.Models;
 using Wiremock.OpenAPIValidator.Commands;
 using Wiremock.OpenAPIValidator.Queries;
 
@@ -94,7 +92,7 @@ public class ValidationService
 
                 var mockedResponse = await _mediator.Send<Models.WiremockResponseProperties>(new WiremockResponseReaderCommand
                 {
-                    MockResponseFileName = mapping.Response.FileName,
+                    WiremockResponse = mapping.Response,
                     WiremockMappingPath = wireMockMappings
                 });
 
@@ -113,7 +111,6 @@ public class ValidationService
                     Name = operation.OperationId,
                     Responses = operation.Responses
                 }));
-
 
             }
         }
