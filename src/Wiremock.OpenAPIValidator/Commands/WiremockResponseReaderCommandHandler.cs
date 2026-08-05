@@ -91,6 +91,11 @@ public class WiremockResponseReaderCommandHandler
                 // Currently do not support null values (we have no idea what the type should be from the mock)
                 continue;
             }
+            if (obj.Value.GetValueKind() == JsonValueKind.Object)
+            {
+                result.Properties.Add(obj.Key, typeof(object));
+                continue;
+            }
             result.Properties.TryAdd(obj.Key, GetTypeFromValueKind(obj.Value.GetValue<JsonElement>().ValueKind));
         }
     }
